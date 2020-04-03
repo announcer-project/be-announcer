@@ -12,6 +12,6 @@ func LineLogin(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
-	user, err := repositories.GetUserProfileLine(token)
-	return c.JSON(http.StatusOK, user)
+	userId, err := repositories.GetUserProfileLine(token)
+	return c.JSON(http.StatusOK, userId)
 }
