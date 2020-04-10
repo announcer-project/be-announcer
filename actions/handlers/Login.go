@@ -2,16 +2,21 @@ package handlers
 
 import (
 	"be_nms/actions/repositories"
+	"be_nms/models"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
 func LineLogin(c echo.Context) error {
-	token, err := repositories.GetAccessTokenLine(c)
+	userIDLine, err := repositories.GetUserIDLine(c)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, err)
+		return c.JSON(400, err)
 	}
-	userId, err := repositories.GetUserProfileLine(token)
-	return c.JSON(http.StatusOK, userId)
+	user, err := repositories.GetUserBySocialId(userIDLine, "line")
+	if err != nil {
+		return c.JSON(400, err)
+	}
+	jwt := repositories.EncodeJWT(user.(models.User))
+	return c.JSON(http.StatusOK, jwt)
 }

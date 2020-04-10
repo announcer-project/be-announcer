@@ -1,8 +1,12 @@
 package repositories
 
 import (
+	"be_nms/database"
+	"be_nms/models"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -11,14 +15,14 @@ import (
 )
 
 type Token struct {
-	Access_token string `json: "token"`
+	ID_Token string `json:"id_token"`
 }
 
 type UserIdSocial struct {
 	UserId string `json: "userId"`
 }
 
-func GetAccessTokenLine(c echo.Context) (string, error) {
+func GetUserIDLine(c echo.Context) (string, error) {
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("client_id", getEnv("CLIENT_ID", ""))
@@ -28,29 +32,27 @@ func GetAccessTokenLine(c echo.Context) (string, error) {
 	client := &http.Client{}
 	request, _ := http.NewRequest("POST", "https://api.line.me/oauth2/v2.1/token", strings.NewReader(data.Encode()))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	res, _ := client.Do(request)
+	res, err := client.Do(request)
 	defer res.Body.Close()
+	if err != nil {
+		return "nil", err
+	}
 	body, _ := ioutil.ReadAll(res.Body)
+	log.Print(string(body))
 	token := Token{}
 	json.Unmarshal(body, &token)
-	return token.Access_token, nil
+	profile, _ := DecodeJWT(token.ID_Token)
+	return profile["sub"].(string), nil
 }
 
-func GetUserIdLine(AccessToken string) (interface{}, error) {
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", "https://api.line.me/v2/profile", nil)
-	req.Header.Set("Authorization", "Bearer "+AccessToken)
-	res, _ := client.Do(req)
-	body, _ := ioutil.ReadAll(res.Body)
-	user := UserIdSocial{}
-	json.Unmarshal(body, &user)
-	return user.UserId, nil
-}
-
-func GetUserBySocialId(UserId, Social string) (bool, err) {
+func GetUserBySocialId(UserId, Social string) (interface{}, error) {
+	db := database.Open()
+	user := models.User{}
 	if Social == "line" {
-		//check with db
-		//user
+		db.First(&user, "line_id = ?", UserId)
+		if user.UserID == 0 {
+			return nil, errors.New("You don't register.")
+		}
 	}
-	return true, nil
+	return user, nil
 }
