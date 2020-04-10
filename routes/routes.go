@@ -18,5 +18,6 @@ func Init() *echo.Echo {
 		return c.String(http.StatusOK, "Welcome to News Management System")
 	})
 	e.POST("/linelogin", handlers.LineLogin)
+	e.POST("/register", handlers.Register)
 	return e
 }
