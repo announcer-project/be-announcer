@@ -8,7 +8,7 @@ import (
 )
 
 type JWT struct {
-	UserID int64 `json:"user_id"`
+	UserID string `json:"user_id"`
 	FName  string `json:"fname"`
 	LName  string `json:"lname"`
 	jwtgo.StandardClaims
@@ -26,8 +26,8 @@ func EncodeJWT(user models.User) string {
 
 func DecodeJWT(jwt string) (jwtgo.MapClaims, interface{}) {
 	token, _ := jwtgo.Parse(jwt, func(token *jwtgo.Token) (interface{}, error) {
-		return []byte("newsmanagement"), nil;
-	});
+		return []byte("newsmanagement"), nil
+	})
 	tokens := token.Claims.(jwtgo.MapClaims)
-	return tokens, nil;
+	return tokens, nil
 }
