@@ -11,6 +11,7 @@ func main() {
 	e := routes.Init()
 	db := database.Open()
 	defer db.Close()
-	database.SetData(db)
+	// database.Migration(db)
+	// database.SetData(db)
 	e.Logger.Fatal(e.Start(":1323"))
 }
