@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type NewsType struct {
 	NewsTypeID uint	`gorm:"primary_key;"`
 	NewsTypeName  string
