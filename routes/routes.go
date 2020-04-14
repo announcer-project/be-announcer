@@ -21,5 +21,6 @@ func Init() *echo.Echo {
 	e.POST("/register", handlers.Register)
 
 	e.POST("/createnews", handlers.CreateNews)
+	e.GET("/getnews/:id", handlers.GetNewsByID)
 	return e
 }
