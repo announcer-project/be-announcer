@@ -8,6 +8,11 @@ import (
 )
 
 func CreateNews(c echo.Context) error {
-	news, _ := repositories.CreateNews(c)
+	repositories.CreateNews(c)
+	return c.JSON(http.StatusOK, "Create success.")
+}
+
+func GetNewsByID(c echo.Context) error {
+	news, _ := repositories.GetNewsByID(c)
 	return c.JSON(http.StatusOK, news)
 }

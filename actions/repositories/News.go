@@ -23,3 +23,11 @@ func CreateNews(c echo.Context) (bool, error) {
 	db.Create(&news)
 	return true, nil
 }
+
+func GetNewsByID(c echo.Context) (interface{}, error) {
+	db := database.Open()
+	defer db.Close()
+	news := models.News{}
+	db.First(&news, c.Param("id"))
+	return news, nil
+}
