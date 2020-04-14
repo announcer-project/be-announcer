@@ -19,5 +19,7 @@ func Init() *echo.Echo {
 	})
 	e.POST("/linelogin", handlers.LineLogin)
 	e.POST("/register", handlers.Register)
+
+	e.POST("/createnews", handlers.CreateNews)
 	return e
 }
