@@ -23,6 +23,7 @@ func Init() *echo.Echo {
 	//NewsManagement
 	e.POST("/createnews", handlers.CreateNews)
 	e.GET("/getnews/:id", handlers.GetNewsByID)
+	e.POST("/announcenews", handlers.AnnounceNews)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	return e
