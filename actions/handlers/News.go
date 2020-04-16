@@ -19,10 +19,13 @@ func GetNewsByID(c echo.Context) error {
 }
 
 func AnnounceNews(c echo.Context) error {
-	news := models.News{}
-	announce := repositories.BroadMessageLine(c, news)
+	news, err := repositories.GetNewsByID(c)
+	if err != nil {
+		return c.JSON(http.StatusOK, err)
+	}
+	announce, err := repositories.BroadcastNewsLine(c, news.(models.News))
 	if !announce {
-		return c.JSON(http.StatusOK, "Announe Fail!")
+		return c.JSON(http.StatusOK, err)
 	}
 	return c.JSON(http.StatusOK, "Announe Success!")
 }
