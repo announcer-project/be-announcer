@@ -10,7 +10,7 @@ import (
 
 func CreateNews(c echo.Context) (bool, error) {
 	title := c.FormValue("title")
-	content := c.FormValue("contents")
+	content := c.FormValue("content")
 	expireDate, _ := time.Parse(c.FormValue("expiredate"), "YYYY-MM-DD")
 	jwt := c.FormValue("jwt")
 	tokens, _ := DecodeJWT(jwt)
@@ -28,6 +28,10 @@ func GetNewsByID(c echo.Context) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	news := models.News{}
-	db.First(&news, c.Param("id"))
+	if c.Param("id") != "" {
+		db.First(&news, c.Param("id"))
+	} else {
+		db.First(&news, c.FormValue("id"))
+	}
 	return news, nil
 }
