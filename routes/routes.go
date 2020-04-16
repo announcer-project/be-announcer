@@ -17,10 +17,13 @@ func Init() *echo.Echo {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to News Management System")
 	})
+	//Account
 	e.POST("/linelogin", handlers.LineLogin)
 	e.POST("/register", handlers.Register)
-
+	//NewsManagement
 	e.POST("/createnews", handlers.CreateNews)
 	e.GET("/getnews/:id", handlers.GetNewsByID)
+	//Social
+	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	return e
 }
