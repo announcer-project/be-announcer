@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"be_nms/actions/repositories"
-	"be_nms/models"
+	"be_nms/models/modelsNews"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -23,7 +23,7 @@ func AnnounceNews(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusOK, err)
 	}
-	announce, err := repositories.BroadcastNewsLine(c, news.(models.News))
+	announce, err := repositories.BroadcastNewsLine(c, news.(modelsNews.News))
 	if !announce {
 		return c.JSON(http.StatusOK, err)
 	}

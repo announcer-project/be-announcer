@@ -3,6 +3,7 @@ package repositories
 import (
 	"be_nms/database"
 	"be_nms/models"
+	"be_nms/models/modelsNews"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -10,7 +11,7 @@ import (
 
 func CreateNews(c echo.Context) (bool, error) {
 	title := c.FormValue("title")
-	content := c.FormValue("content")
+	body := c.FormValue("body")
 	expireDate, _ := time.Parse(c.FormValue("expiredate"), "YYYY-MM-DD")
 	jwt := c.FormValue("jwt")
 	tokens, _ := DecodeJWT(jwt)
@@ -18,8 +19,9 @@ func CreateNews(c echo.Context) (bool, error) {
 	defer db.Close()
 	admin := models.Admin{}
 	db.Where("user_id = ?", tokens["user_id"]).First(&admin)
-	news := models.News{}
-	news.CreateNews(title, content, expireDate, admin.AdminID)
+	system := models.System{}
+	db.Where("id = ?", c.FormValue("systemid")).First(&system)
+	news := modelsNews.News{Title: title, Body: body, ExpireDate: expireDate, SystemID: system.ID, AuthorID: admin.ID}
 	db.Create(&news)
 	return true, nil
 }
@@ -27,7 +29,7 @@ func CreateNews(c echo.Context) (bool, error) {
 func GetNewsByID(c echo.Context) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
-	news := models.News{}
+	news := modelsNews.News{}
 	if c.Param("id") != "" {
 		db.First(&news, c.Param("id"))
 	} else {

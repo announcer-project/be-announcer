@@ -50,7 +50,7 @@ func GetUserBySocialId(UserId, Social string) (interface{}, error) {
 	user := models.User{}
 	if Social == "line" {
 		db.First(&user, "line_id = ?", UserId)
-		if user.UserID == 0 {
+		if user.ID == "" {
 			return nil, errors.New("You don't register.")
 		}
 	}

@@ -15,7 +15,7 @@ type JWT struct {
 }
 
 func EncodeJWT(user models.User) string {
-	tokenJWT := JWT{UserID: user.UserID, FName: user.FName, LName: user.LName}
+	tokenJWT := JWT{UserID: user.ID, FName: user.FName, LName: user.LName}
 	token := jwtgo.NewWithClaims(jwtgo.GetSigningMethod("HS256"), tokenJWT)
 	jwt, err := token.SignedString([]byte("newsmanagement"))
 	if err != nil {

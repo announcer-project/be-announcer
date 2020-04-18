@@ -22,8 +22,9 @@ func Init() *echo.Echo {
 	e.POST("/register", handlers.Register)
 	//NewsManagement
 	e.POST("/createnews", handlers.CreateNews)
-	e.GET("/getnews/:id", handlers.GetNewsByID)
+	e.GET("/news/:id", handlers.GetNewsByID)
 	e.POST("/announcenews", handlers.AnnounceNews)
+	e.POST("/createtargetgroup", handlers.CreateTargetGroup)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	return e

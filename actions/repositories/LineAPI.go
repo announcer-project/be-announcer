@@ -1,7 +1,8 @@
 package repositories
 
 import (
-	"be_nms/models"
+	"be_nms/models/modelsLineAPI"
+	"be_nms/models/modelsNews"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
@@ -12,7 +13,7 @@ import (
 )
 
 type LineBroadcastMessage struct {
-	Messages []models.CardLine `json:"messages"`
+	Messages []modelsLineAPI.CardLine `json:"messages"`
 }
 
 // func BroadMessageLine(c echo.Context, news models.News) bool {
@@ -34,10 +35,10 @@ type LineBroadcastMessage struct {
 // 	return true
 // }
 
-func BroadcastNewsLine(c echo.Context, news models.News) (bool, error) {
-	newsCard := models.CardLine{}
-	newsCard.CreateCardLine("https://www.google.com", news.Title, news.Content)
-	cards := []models.CardLine{newsCard}
+func BroadcastNewsLine(c echo.Context, news modelsNews.News) (bool, error) {
+	newsCard := modelsLineAPI.CardLine{}
+	newsCard.CreateCardLine("https://www.google.com", news.Title, news.Body)
+	cards := []modelsLineAPI.CardLine{newsCard}
 	messages := LineBroadcastMessage{cards}
 	messagesJSON, _ := json.Marshal(messages)
 	log.Print(messagesJSON)

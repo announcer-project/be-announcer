@@ -3,28 +3,25 @@ package models
 import (
 	"math/rand"
 	"strconv"
-	"time"
 
 	"github.com/jinzhu/gorm"
 )
 
 type User struct {
-	UserID     string `gorm:"type:char(36);primary_key"`
+	ID         string `gorm:"primary_key"`
 	FName      string
 	LName      string
 	Email      string `gorm:"unique"`
 	LineID     string
 	FacebookID string
 	GoogleID   string
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	DeletedAt  *time.Time
-	System     []System `gorm:"foreignkey:OwnerID"`
-	Admin      []Admin  `gorm:"foreignkey:UserID"`
+
+	System []System `gorm:"foreignkey:OwnerID`
+	Admin  []Admin  `gorm:"foreignkey:UserID"`
 }
 
 func (u *User) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("UserID", GenUserID())
+	scope.SetColumn("ID", GenUserID())
 	return nil
 }
 

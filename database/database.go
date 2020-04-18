@@ -2,7 +2,7 @@ package database
 
 import (
 	"be_nms/models"
-	"log"
+	"be_nms/models/modelsNews"
 
 	"github.com/jinzhu/gorm"
 )
@@ -20,22 +20,20 @@ func Migration(db *gorm.DB) {
 		&models.User{},
 		&models.System{},
 		&models.Admin{},
-		&models.News{},
-		&models.NewsType{},
-		&models.TypeOfNews{})
+		&modelsNews.News{},
+		&modelsNews.Image{},
+		&modelsNews.Announcement{},
+	)
 }
 
 func SetData(db *gorm.DB) {
-	user := models.User{}
-	user.CreateUser("Panupong", "Joknoi", "panupong.jkn@gmail.com", "Ufc12c85816992da6381aa3405b9e8083", "", "")
+	user := models.User{FName: "Panupong", LName: "Joknoi", Email: "panpong.jkn@gmail.com", LineID: "Ufc12c85816992da6381aa3405b9e8083", FacebookID: "", GoogleID: ""}
 	db.Create(&user)
 	db.First(&user)
-	log.Print(user)
-	system := models.System{}
-	system.CreateSystem("NMS", user.UserID)
+	// log.Print(user)
+	system := models.System{SystemName: "NMS", OwnerID: user.ID}
 	db.Create(&system)
 	db.First(&system)
-	admin := models.Admin{}
-	admin.CreateAdmin(system.SystemID, user.UserID, "Admin")
+	admin := models.Admin{UserID: user.ID, SystemID: system.ID, Position: "admin"}
 	db.Create(&admin)
 }

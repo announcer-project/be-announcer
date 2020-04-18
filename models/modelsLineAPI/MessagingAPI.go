@@ -1,4 +1,4 @@
-package models
+package modelsLineAPI
 
 type TextLine struct {
 	Type string `json:"type"`
@@ -38,21 +38,3 @@ func (c *CardLine) CreateCardLine(Uri, Title, Text string) {
 	c.AltText = Title
 	c.Template = template
 }
-
-// {
-// 	"type": "template",
-// 	"altText": "this is a buttons template",
-// 	"template": {
-// 	  "type": "buttons",
-// 	  "actions": [
-// 		{
-// 		  "type": "uri",
-// 		  "label": "News Detail",
-// 		  "uri": "https://www.google.com"
-// 		}
-// 	  ],
-// 	  "thumbnailImageUrl": "SPECIFY_YOUR_IMAGE_URL",
-// 	  "title": "sdasdasd",
-// 	  "text": "scasc"
-// 	}
-//   }

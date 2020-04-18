@@ -1,19 +1,16 @@
 package models
 
-import "time"
+import (
+	"be_nms/models/modelsNews"
+
+	"github.com/jinzhu/gorm"
+)
 
 type System struct {
-	SystemID   uint `gorm:"primary_key"`
-	SystemName string
-	OwnerID    string
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	DeletedAt  *time.Time
-	Admin      []Admin    `gorm:"foreignkey:SystemID"`
-	NewsType   []NewsType `gorm:"foreignkey:NewsTypeID"`
-}
+	gorm.Model
+	SystemName	string
+	OwnerID		string
 
-func (s *System) CreateSystem(SystemName, OwnerID string) {
-	s.SystemName = SystemName
-	s.OwnerID = OwnerID
+	Admin	[]Admin	`gorm:"foreignkey:SystemID"`
+	News []modelsNews.News `gorm:"foreignkey:SystemID"`
 }
