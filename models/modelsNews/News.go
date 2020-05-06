@@ -17,3 +17,7 @@ type News struct {
 	Announcement []Announcement `gorm:"foreignkey:NewsID`
 	Image        []Image        `gorm:"foreignkey:NewsID"`
 }
+
+func (n *News) CreateNews(Title, Body string, ExpireDate time.Time, SystemID, AuthorID uint) {
+
+}

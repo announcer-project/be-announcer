@@ -27,13 +27,14 @@ func Migration(db *gorm.DB) {
 }
 
 func SetData(db *gorm.DB) {
-	user := models.User{FName: "Panupong", LName: "Joknoi", Email: "panpong.jkn@gmail.com", LineID: "Ufc12c85816992da6381aa3405b9e8083", FacebookID: "", GoogleID: ""}
-	db.Create(&user)
-	db.First(&user)
-	// log.Print(user)
-	system := models.System{SystemName: "NMS", OwnerID: user.ID}
-	db.Create(&system)
-	db.First(&system)
-	admin := models.Admin{UserID: user.ID, SystemID: system.ID, Position: "admin"}
-	db.Create(&admin)
+	// user := models.User{FName: "Panupong", LName: "Joknoi", Email: "panpong.jkn@gmail.com", LineID: "Ufc12c85816992da6381aa3405b9e8083", FacebookID: "", GoogleID: ""}
+	// db.Create(&user)
+	// db.Create(&user2)
+	// db.First(&user)
+	// // log.Print(user)
+	// system := models.System{SystemName: "NMS", OwnerID: user.ID}
+	// db.Create(&system)
+	// db.First(&system)
+	// admin := models.Admin{UserID: user.ID, SystemID: system.ID, Position: "admin"}
+	// db.Create(&admin)
 }

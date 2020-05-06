@@ -1,8 +1,8 @@
 package models
 
 import (
+	"log"
 	"math/rand"
-	"strconv"
 
 	"github.com/jinzhu/gorm"
 )
@@ -28,13 +28,17 @@ func (u *User) BeforeCreate(scope *gorm.Scope) error {
 func GenUserID() string {
 	UserID := "NMS"
 	for i := 0; i < 16; i++ {
-		switch i {
-		case 2, 3, 8, 9, 14, 15:
+		ranType := rand.Intn(2)
+		switch ranType {
+		case 0:
+			UserID += string(rand.Intn(57-48) + 48)
+		case 1:
+			UserID += string(rand.Intn(90-65) + 65)
+		case 2:
 			UserID += string(rand.Intn(122-97) + 97)
-		default:
-			UserID += strconv.Itoa(rand.Intn(9))
 		}
 	}
+	log.Print(UserID)
 	return UserID
 }
 

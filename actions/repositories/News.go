@@ -4,6 +4,7 @@ import (
 	"be_nms/database"
 	"be_nms/models"
 	"be_nms/models/modelsNews"
+	"log"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -13,7 +14,10 @@ func CreateNews(c echo.Context) (bool, error) {
 	title := c.FormValue("title")
 	body := c.FormValue("body")
 	expireDate, _ := time.Parse(c.FormValue("expiredate"), "YYYY-MM-DD")
-	jwt := c.FormValue("jwt")
+	// jwt := c.FormValue("jwt")
+	authorization := c.Request().Header.Get("Authorization")
+	jwt := string([]rune(authorization)[7:])
+	log.Print(jwt)
 	tokens, _ := DecodeJWT(jwt)
 	db := database.Open()
 	defer db.Close()
