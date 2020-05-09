@@ -23,6 +23,7 @@ func Init() *echo.Echo {
 	//System
 	e.GET("/getallsystems", handlers.GetAllSystems)
 	//NewsManagement
+	e.GET("/news/getallnews", handlers.GetAllNews)
 	e.POST("/createnews", handlers.CreateNews)
 	e.GET("/news/:id", handlers.GetNewsByID)
 	e.POST("/announcenews", handlers.AnnounceNews)

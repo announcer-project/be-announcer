@@ -18,6 +18,10 @@ func GetNewsByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, news)
 }
 
+func GetAllNews(c echo.Context) error {
+	news, _ := repositories.GetAllNews(c)
+	return c.JSON(http.StatusOK, news)
+}
 func AnnounceNews(c echo.Context) error {
 	news, err := repositories.GetNewsByID(c)
 	if err != nil {
