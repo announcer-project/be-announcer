@@ -15,6 +15,9 @@ func Register(c echo.Context) error {
 	if user.ID == "" {
 		user.CreateUser(c.FormValue("fname"), c.FormValue("lname"), c.FormValue("email"), c.FormValue("line"), c.FormValue("facebook"), c.FormValue("google"))
 		db.Create(&user)
+		if user.ID != "" {
+			return c.JSON(http.StatusBadRequest, "Create Fail")
+		}
 		return c.JSON(http.StatusOK, "Create Success")
 	}
 	return c.JSON(http.StatusBadRequest, "You have account")

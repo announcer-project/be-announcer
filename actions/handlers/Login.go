@@ -15,7 +15,7 @@ func LineLogin(c echo.Context) error {
 	}
 	user, err := repositories.GetUserBySocialId(userIDLine, "line")
 	if err != nil {
-		return c.JSON(400, err)
+		return c.JSON(http.StatusBadRequest, userIDLine)
 	}
 	jwt := repositories.EncodeJWT(user.(models.User))
 	return c.JSON(http.StatusOK, jwt)
