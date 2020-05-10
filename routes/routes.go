@@ -27,8 +27,12 @@ func Init() *echo.Echo {
 	e.GET("/news/allnews", handlers.GetAllNews)
 	e.POST("/news/create", handlers.CreateNews)
 	e.GET("/news/:id", handlers.GetNewsByID)
+	e.POST("/news/newstype/create", handlers.CreateNewsType)
+	e.GET("/news/newstype/allnewstype", handlers.GetAlNewsType)
 	e.POST("/announcenews", handlers.AnnounceNews)
-	e.POST("/createtargetgroup", handlers.CreateTargetGroup)
+	//TargetGroup
+	e.POST("/targetgroup/create", handlers.CreateTargetGroup)
+	e.GET("/targetgroup/all", handlers.GetAllTargetGroup)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	return e
