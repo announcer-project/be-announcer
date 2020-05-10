@@ -7,4 +7,5 @@ type Announcement struct {
 	NewsID  uint
 	AdminID uint
 	Social  string // line or facebook;
+
 }
