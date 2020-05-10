@@ -11,3 +11,7 @@ type NewsType struct {
 
 	TypeOfNews []TypeOfNews `gorm:"foreignkey:NewsTypeID"`
 }
+
+func (NewsType) TableName() string {
+	return "NewsTypes"
+}

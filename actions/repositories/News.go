@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//News
 func CreateNews(c echo.Context) (bool, error) {
 	title := c.FormValue("title")
 	body := c.FormValue("body")
@@ -31,7 +32,6 @@ func CreateNews(c echo.Context) (bool, error) {
 	db.Create(&news)
 	return true, nil
 }
-
 func GetNewsByID(c echo.Context) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
@@ -43,7 +43,6 @@ func GetNewsByID(c echo.Context) (interface{}, error) {
 	}
 	return news, nil
 }
-
 func GetAllNews(c echo.Context) (interface{}, error) {
 	authorization := c.Request().Header.Get("Authorization")
 	jwt := string([]rune(authorization)[7:])
@@ -52,14 +51,50 @@ func GetAllNews(c echo.Context) (interface{}, error) {
 	defer db.Close()
 	admin := models.Admin{}
 	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
-	log.Print(admin)
-	log.Print(tokens["user_id"])
-	log.Print(c.FormValue("test"))
-	log.Print(c.FormValue("systemid"))
 	if admin.ID == 0 {
 		return nil, errors.New("You not admin in this system.")
 	}
 	news := []modelsNews.News{}
 	db.Where("system_id = ?", c.FormValue("systemid")).Find(&news)
 	return news, nil
+}
+
+//NewsType
+func CreateNewsType(c echo.Context) (interface{}, error) {
+	authorization := c.Request().Header.Get("Authorization")
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := DecodeJWT(jwt)
+	db := database.Open()
+	defer db.Close()
+	admin := models.Admin{}
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
+	if admin.ID == 0 {
+		return nil, errors.New("You not admin in this system.")
+	}
+	system := models.System{}
+	db.Where("id = ?", c.FormValue("systemid")).Find(&system)
+	if system.ID == 0 {
+		return nil, errors.New("Not have system.")
+	}
+	newsType := modelsNews.NewsType{NewTypeName: c.FormValue("newstypename"), SystemID: system.ID}
+	db.Create(&newsType)
+	if newsType.ID == 0 {
+		return nil, errors.New("Create fail.")
+	}
+	return newsType, nil
+}
+func GetAllNewsType(c echo.Context) (interface{}, error) {
+	authorization := c.Request().Header.Get("Authorization")
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := DecodeJWT(jwt)
+	db := database.Open()
+	defer db.Close()
+	admin := models.Admin{}
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
+	if admin.ID == 0 {
+		return nil, errors.New("You not admin in this system.")
+	}
+	newsTypes := []modelsNews.NewsType{}
+	db.Where("system_id = ?", c.FormValue("systemid")).Find(&newsTypes)
+	return newsTypes, nil
 }

@@ -2,6 +2,7 @@ package database
 
 import (
 	"be_nms/models"
+	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
 
 	"github.com/jinzhu/gorm"
@@ -23,6 +24,8 @@ func Migration(db *gorm.DB) {
 		&modelsNews.News{},
 		&modelsNews.Image{},
 		&modelsNews.Announcement{},
+		&modelsNews.NewsType{},
+		&modelsMember.TargetGroup{},
 	)
 }
 

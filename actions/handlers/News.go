@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//News
 func CreateNews(c echo.Context) error {
 	repositories.CreateNews(c)
 	return c.JSON(http.StatusOK, "Create success.")
@@ -22,6 +23,24 @@ func GetAllNews(c echo.Context) error {
 	news, _ := repositories.GetAllNews(c)
 	return c.JSON(http.StatusOK, news)
 }
+
+//NewsType
+func CreateNewsType(c echo.Context) error {
+	_, err := repositories.CreateNewsType(c)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, "Create Success.")
+}
+func GetAlNewsType(c echo.Context) error {
+	newsTypes, err := repositories.GetAllNewsType(c)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, newsTypes)
+}
+
+//Announce
 func AnnounceNews(c echo.Context) error {
 	news, err := repositories.GetNewsByID(c)
 	if err != nil {
@@ -31,5 +50,5 @@ func AnnounceNews(c echo.Context) error {
 	if !announce {
 		return c.JSON(http.StatusOK, err)
 	}
-	return c.JSON(http.StatusOK, "Announe Success!")
+	return c.JSON(http.StatusOK, "Announce Success!")
 }
