@@ -13,16 +13,15 @@ func GetAllsystems(c echo.Context) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	authorization := c.Request().Header.Get("Authorization")
+	log.Print(authorization)
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := DecodeJWT(jwt)
 	admins := []models.Admin{}
 	db.Where("user_id = ?", tokens["user_id"]).Find(&admins)
 	systems := []models.System{}
-	system := models.System{}
-	for i, admin := range admins {
+	for _, admin := range admins {
+		system := models.System{}
 		db.Where("id = ?", admin.SystemID).First(&system)
-		log.Print(system)
-		log.Print(i)
 		systems = append(systems, system)
 	}
 	return systems, nil
