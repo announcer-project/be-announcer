@@ -21,10 +21,11 @@ func Init() *echo.Echo {
 	e.POST("/linelogin", handlers.LineLogin)
 	e.POST("/register", handlers.Register)
 	//System
-	e.GET("/getallsystems", handlers.GetAllSystems)
+	e.GET("/system/allsystem", handlers.GetAllSystems)
+	e.POST("/system/create", handlers.CreateSystem)
 	//NewsManagement
-	e.GET("/news/getallnews", handlers.GetAllNews)
-	e.POST("/createnews", handlers.CreateNews)
+	e.GET("/news/allnews", handlers.GetAllNews)
+	e.POST("/news/create", handlers.CreateNews)
 	e.GET("/news/:id", handlers.GetNewsByID)
 	e.POST("/announcenews", handlers.AnnounceNews)
 	e.POST("/createtargetgroup", handlers.CreateTargetGroup)
