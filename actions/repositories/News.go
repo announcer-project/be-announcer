@@ -56,6 +56,7 @@ func GetNewsByID(c echo.Context) (interface{}, error) {
 	}
 	return news, nil
 }
+
 func GetAllNews(c echo.Context) (interface{}, error) {
 	authorization := c.Request().Header.Get("Authorization")
 	jwt := string([]rune(authorization)[7:])

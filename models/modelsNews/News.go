@@ -13,6 +13,7 @@ type News struct {
 	ExpireDate time.Time
 	SystemID   uint
 	AuthorID   uint
+	Status     string //Draft or Publish
 
 	Announcement []Announcement `gorm:"foreignkey:NewsID"`
 	Image        []Image        `gorm:"foreignkey:NewsID"`
