@@ -5,33 +5,46 @@ import (
 	"be_nms/models"
 	"be_nms/models/modelsNews"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
+type Data struct {
+	Title      string
+	Body       string
+	Expiredate string
+	NewsTypes  []string
+	SystemID   uint
+}
+
 //News
 func CreateNews(c echo.Context) (bool, error) {
-	title := c.FormValue("title")
-	body := c.FormValue("body")
-	expireDate, _ := time.Parse(c.FormValue("expiredate"), "YYYY-MM-DD")
+	data := Data{}
+	if err := c.Bind(&data); err != nil {
+		return false, err
+	}
 	authorization := c.Request().Header.Get("Authorization")
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := DecodeJWT(jwt)
 	db := database.Open()
 	defer db.Close()
 	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
-	log.Print(admin)
-	log.Print(tokens["user_id"])
-	log.Print(c.FormValue("systemid"))
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], data.SystemID).Find(&admin)
 	system := models.System{}
-	db.Where("id = ?", c.FormValue("systemid")).First(&system)
-	news := modelsNews.News{Title: title, Body: body, ExpireDate: expireDate, SystemID: system.ID, AuthorID: admin.ID}
+	db.Where("id = ?", data.SystemID).First(&system)
+	if system.ID == 0 {
+		return false, errors.New("Create fail.")
+	}
+	expiredate, _ := time.Parse("dd-mm-yy", data.Expiredate)
+	news := modelsNews.News{Title: data.Title, Body: data.Body, ExpireDate: expiredate, SystemID: system.ID, AuthorID: admin.ID}
 	db.Create(&news)
+	if news.ID == 0 {
+		return false, errors.New("Create fail.")
+	}
 	return true, nil
 }
+
 func GetNewsByID(c echo.Context) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()

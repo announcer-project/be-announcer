@@ -11,7 +11,7 @@ import (
 //News
 func CreateNews(c echo.Context) error {
 	repositories.CreateNews(c)
-	return c.JSON(http.StatusOK, "Create success.")
+	return c.String(http.StatusOK, "Create success.")
 }
 
 func GetNewsByID(c echo.Context) error {
