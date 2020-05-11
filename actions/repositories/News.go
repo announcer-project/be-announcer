@@ -90,7 +90,7 @@ func CreateNewsType(c echo.Context) (interface{}, error) {
 	if system.ID == 0 {
 		return nil, errors.New("Not have system.")
 	}
-	newsType := modelsNews.NewsType{NewTypeName: c.FormValue("newstypename"), SystemID: system.ID}
+	newsType := modelsNews.NewsType{NewsTypeName: c.FormValue("newstypename"), SystemID: system.ID}
 	db.Create(&newsType)
 	if newsType.ID == 0 {
 		return nil, errors.New("Create fail.")
@@ -103,12 +103,17 @@ func GetAllNewsType(c echo.Context) (interface{}, error) {
 	tokens, _ := DecodeJWT(jwt)
 	db := database.Open()
 	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? AND system_name = ?", c.QueryParam("systemid"), c.QueryParam("systemname")).Find(&system)
+	if system.ID == 0 {
+		return nil, errors.New("Not have this system.")
+	}
 	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.QueryParam("systemid")).Find(&admin)
 	if admin.ID == 0 {
 		return nil, errors.New("You not admin in this system.")
 	}
 	newsTypes := []modelsNews.NewsType{}
-	db.Where("system_id = ?", c.FormValue("systemid")).Find(&newsTypes)
+	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&newsTypes)
 	return newsTypes, nil
 }
