@@ -12,7 +12,7 @@ func main() {
 	e := routes.Init()
 	db := database.Open()
 	defer db.Close()
-	// database.Migration(db)
+	database.Migration(db)
 	// database.SetData(db)
 	e.Use(middleware.CORS())
 	e.Logger.Fatal(e.Start(":8080"))
