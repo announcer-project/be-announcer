@@ -38,12 +38,17 @@ func GetAllTargetGroup(c echo.Context) (interface{}, error) {
 	tokens, _ := DecodeJWT(jwt)
 	db := database.Open()
 	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? AND system_name = ?", c.QueryParam("systemid"), c.QueryParam("systemname")).Find(&system)
+	if system.ID == 0 {
+		return nil, errors.New("Not have this system.")
+	}
 	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.QueryParam("systemid")).Find(&admin)
 	if admin.ID == 0 {
 		return nil, errors.New("You not admin in this system.")
 	}
 	targetGroups := []modelsMember.TargetGroup{}
-	db.Where("system_id = ?", c.FormValue("systemid")).Find(&targetGroups)
+	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&targetGroups)
 	return targetGroups, nil
 }
