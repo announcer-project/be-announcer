@@ -26,6 +26,7 @@ type News struct {
 	Newstypes       []NewsType
 	System          string
 	SystemID        string
+	Status          string
 }
 
 //News
@@ -51,7 +52,7 @@ func CreateNews(c echo.Context) error {
 		return errors.New("Have not this system.")
 	}
 	expiredate, _ := time.Parse("dd-mm-yy", data.Expiredate)
-	news := modelsNews.News{Title: data.Title, Body: data.Body, ExpireDate: expiredate, SystemID: system.ID, AuthorID: admin.ID}
+	news := modelsNews.News{Title: data.Title, Body: data.Body, ExpireDate: expiredate, SystemID: system.ID, AuthorID: admin.ID, Status: data.Status}
 	db.Create(&news)
 	if news.ID == 0 {
 		return errors.New("Create fail.")
