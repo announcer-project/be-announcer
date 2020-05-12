@@ -10,8 +10,11 @@ import (
 
 //News
 func CreateNews(c echo.Context) error {
-	repositories.CreateNews(c)
-	return c.String(http.StatusOK, "Create success.")
+	err := repositories.CreateNews(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+	return c.JSON(http.StatusOK, "Create success.")
 }
 
 func GetNewsByID(c echo.Context) error {

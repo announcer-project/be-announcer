@@ -5,25 +5,36 @@ import (
 	"be_nms/models"
 	"be_nms/models/modelsNews"
 	"errors"
+	"log"
+	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
-type Data struct {
-	Title      string
-	Body       string
-	Expiredate string
-	NewsTypes  []string
-	SystemID   uint
+type NewsType struct {
+	ID       int
+	Newstype string
+	Selected bool
+}
+type News struct {
+	Title           string
+	Body            string
+	Checkexpiredate bool
+	Expiredate      string
+	Images          []os.File
+	Newstypes       []NewsType
+	System          string
+	SystemID        string
 }
 
 //News
-func CreateNews(c echo.Context) (bool, error) {
-	data := Data{}
+func CreateNews(c echo.Context) error {
+	data := News{}
 	if err := c.Bind(&data); err != nil {
-		return false, err
+		return err
 	}
+	log.Print(data)
 	authorization := c.Request().Header.Get("Authorization")
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := DecodeJWT(jwt)
@@ -31,18 +42,33 @@ func CreateNews(c echo.Context) (bool, error) {
 	defer db.Close()
 	admin := models.Admin{}
 	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], data.SystemID).Find(&admin)
+	if admin.ID == 0 {
+		return errors.New("You not admin.")
+	}
 	system := models.System{}
 	db.Where("id = ?", data.SystemID).First(&system)
 	if system.ID == 0 {
-		return false, errors.New("Create fail.")
+		return errors.New("Have not this system.")
 	}
 	expiredate, _ := time.Parse("dd-mm-yy", data.Expiredate)
 	news := modelsNews.News{Title: data.Title, Body: data.Body, ExpireDate: expiredate, SystemID: system.ID, AuthorID: admin.ID}
 	db.Create(&news)
 	if news.ID == 0 {
-		return false, errors.New("Create fail.")
+		return errors.New("Create fail.")
 	}
-	return true, nil
+	for _, newstype := range data.Newstypes {
+		newstypedb := modelsNews.NewsType{}
+		db.Where("id = ?", newstype.ID).Find(&newstypedb)
+		if newstypedb.ID == 0 {
+			return errors.New("Create fail.")
+		}
+		typeofnews := modelsNews.TypeOfNews{NewsID: news.ID, NewsTypeID: newstypedb.ID}
+		db.Create(&typeofnews)
+		if newstypedb.ID == 0 {
+			return errors.New("Create fail.")
+		}
+	}
+	return nil
 }
 
 func GetNewsByID(c echo.Context) (interface{}, error) {

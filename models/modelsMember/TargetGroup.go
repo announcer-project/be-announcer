@@ -14,3 +14,7 @@ type TargetGroup struct {
 	// News     []modelsNews.News     `gorm:"foreignkey:SystemID"`
 	// NewsType []modelsNews.NewsType `gorm:"foreignkey:SystemID"`
 }
+
+func (TargetGroup) TableName() string {
+	return "TargetGroup"
+}

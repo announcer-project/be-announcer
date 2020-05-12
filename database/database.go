@@ -25,6 +25,7 @@ func Migration(db *gorm.DB) {
 		&modelsNews.Image{},
 		&modelsNews.Announcement{},
 		&modelsNews.NewsType{},
+		&modelsNews.TypeOfNews{},
 		&modelsMember.TargetGroup{},
 	)
 }

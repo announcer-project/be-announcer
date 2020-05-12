@@ -9,3 +9,7 @@ type TypeOfNews struct {
 	NewsID     uint
 	NewsTypeID uint
 }
+
+func (TypeOfNews) TableName() string {
+	return "TypeOfNews"
+}
