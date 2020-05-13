@@ -52,7 +52,14 @@ func CreateNews(c echo.Context) error {
 	if system.ID == 0 {
 		return errors.New("Have not this system.")
 	}
-	expiredate, _ := time.Parse("dd-mm-yy", data.Expiredate)
+	input := ""
+	layout := "02-01-2006"
+	if data.Expiredate == "Invalid date" {
+		input = "01-01-2000"
+	} else {
+		input = data.Expiredate
+	}
+	expiredate, _ := time.Parse(layout, input)
 	news := modelsNews.News{Title: data.Title, Body: data.Body, ExpireDate: expiredate, SystemID: system.ID, AuthorID: admin.ID, Status: data.Status}
 	db.Create(&news)
 	if news.ID == 0 {
