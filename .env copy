@@ -1,4 +1,9 @@
+//for line login
 CLIENT_ID=
 CLIENT_SECRET=
 REDIRECT_URI=
+FE_PATH=
+
+//for line API
 PORT=
+CHANNEL_ACCESS_TOKEN=
