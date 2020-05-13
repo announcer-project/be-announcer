@@ -21,7 +21,7 @@ type RichMenuID struct {
 	Richmenuid string `json:"richMenuId"`
 }
 
-func CreateRichmenu(c echo.Context) (interface{}, error) {
+func CreateRichmenu(channelid, channeltoken string) (interface{}, error) {
 	richMenu := linebot.RichMenu{
 		Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
 		Selected:    true,
@@ -38,7 +38,7 @@ func CreateRichmenu(c echo.Context) (interface{}, error) {
 			},
 		},
 	}
-	bot, err := linebot.New("5af2298b7e1947a1c459a57a8b04c24c", "DvrYhtBgw8CnugSi1Y+dMMjhwK1gsSWXGv4xTd/kE32zycLc3CjMdhUq63MyR0Gfk0CM202eaiyLMWAQ7EFIzCH/nXY8wg1Gp14+7jq1afGpvyP9dKXN91bZIYvfDusm54b6bDAFfORaWFwRphbN+AdB04t89/1O/w1cDnyilFU=")
+	bot, err := linebot.New(channelid, channeltoken)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,8 @@ func CreateRichmenu(c echo.Context) (interface{}, error) {
 	return res.RichMenuID, nil
 }
 
-func SetImageToRichMenu(c echo.Context, richmenu string) error {
-	bot, err := linebot.New("5af2298b7e1947a1c459a57a8b04c24c", "DvrYhtBgw8CnugSi1Y+dMMjhwK1gsSWXGv4xTd/kE32zycLc3CjMdhUq63MyR0Gfk0CM202eaiyLMWAQ7EFIzCH/nXY8wg1Gp14+7jq1afGpvyP9dKXN91bZIYvfDusm54b6bDAFfORaWFwRphbN+AdB04t89/1O/w1cDnyilFU=")
+func SetImageToRichMenu(richmenu, channelid, channeltoken string) error {
+	bot, err := linebot.New(channelid, channeltoken)
 	if err != nil {
 		return err
 	}
@@ -62,8 +62,8 @@ func SetImageToRichMenu(c echo.Context, richmenu string) error {
 	return nil
 }
 
-func SetDefaultRichMenu(c echo.Context, richmenuid string) error {
-	bot, err := linebot.New("5af2298b7e1947a1c459a57a8b04c24c", "DvrYhtBgw8CnugSi1Y+dMMjhwK1gsSWXGv4xTd/kE32zycLc3CjMdhUq63MyR0Gfk0CM202eaiyLMWAQ7EFIzCH/nXY8wg1Gp14+7jq1afGpvyP9dKXN91bZIYvfDusm54b6bDAFfORaWFwRphbN+AdB04t89/1O/w1cDnyilFU=")
+func SetDefaultRichMenu(richmenuid, channelid, channeltoken string) error {
+	bot, err := linebot.New(channelid, channeltoken)
 	if err != nil {
 		return err
 	}
