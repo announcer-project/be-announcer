@@ -4,9 +4,11 @@ import (
 	"be_nms/database"
 	"be_nms/models"
 	"be_nms/models/modelsNews"
+	"encoding/base64"
 	"errors"
-	"log"
+	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -22,7 +24,7 @@ type News struct {
 	Body            string
 	Checkexpiredate bool
 	Expiredate      string
-	Images          []os.File
+	Images          []string
 	Newstypes       []NewsType
 	System          string
 	SystemID        string
@@ -35,7 +37,6 @@ func CreateNews(c echo.Context) error {
 	if err := c.Bind(&data); err != nil {
 		return err
 	}
-	log.Print(data)
 	authorization := c.Request().Header.Get("Authorization")
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := DecodeJWT(jwt)
@@ -67,6 +68,45 @@ func CreateNews(c echo.Context) error {
 		db.Create(&typeofnews)
 		if newstypedb.ID == 0 {
 			return errors.New("Create fail.")
+		}
+	}
+	UploadImages(data.Images, news.ID, system)
+	return nil
+}
+
+func UploadImages(images []string, newsID uint, system models.System) error {
+	db := database.Open()
+	defer db.Close()
+	for i, image := range images {
+		checkbase64 := string([]rune(image)[16:22])
+		file := ""
+		if checkbase64 == "base64" {
+			file = string([]rune(image)[23:])
+		} else {
+			file = string([]rune(image)[22:])
+		}
+		dec, err := base64.StdEncoding.DecodeString(file)
+		if err != nil {
+			panic(err)
+		}
+		imagename := system.SystemName + "-" + fmt.Sprint(system.ID) + "-" + fmt.Sprint(newsID) + "-" + strconv.Itoa(i) + `.jpg`
+		path := getEnv("FE_PATH", "") + `\public\image\News\` + imagename
+		f, err := os.Create(path)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+
+		if _, err := f.Write(dec); err != nil {
+			panic(err)
+		}
+		if err := f.Sync(); err != nil {
+			panic(err)
+		}
+		img := modelsNews.Image{NewsID: newsID, ImageName: imagename}
+		db.Create(&img)
+		if img.ID == 0 {
+			return errors.New("Upload error.")
 		}
 	}
 	return nil
