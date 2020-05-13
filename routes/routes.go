@@ -35,5 +35,8 @@ func Init() *echo.Echo {
 	e.GET("/targetgroup/all", handlers.GetAllTargetGroup)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
+
+	//Line API Richmenu
+	e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
 	return e
 }
