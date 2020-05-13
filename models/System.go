@@ -17,4 +17,5 @@ type System struct {
 	NewsType    []modelsNews.NewsType      `gorm:"foreignkey:SystemID"`
 	Member      []modelsMember.Member      `gorm:"foreignkey:SystemID"`
 	TargetGroup []modelsMember.TargetGroup `gorm:"foreignkey:SystemID"`
+	LineOA      []LineOA                   `gorm:"foreignkey:SystemID"`
 }
