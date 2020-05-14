@@ -23,3 +23,11 @@ type News struct {
 func (n *News) CreateNews(Title, Body string, ExpireDate time.Time, SystemID, AuthorID uint) {
 
 }
+
+func (news *News) AddTypeOfNews(typeofnews TypeOfNews) {
+	news.TypeOfNews = append(news.TypeOfNews, typeofnews)
+}
+
+func (news *News) AddImage(img Image) {
+	news.Image = append(news.Image, img)
+}

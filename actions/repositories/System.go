@@ -42,7 +42,6 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 	if err := c.Bind(&systemReq); err != nil {
 		return nil, err
 	}
-	log.Print(systemReq)
 	db := database.Open()
 	defer db.Close()
 	authorization := c.Request().Header.Get("Authorization")
@@ -54,30 +53,26 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		return nil, errors.New("Create fail.")
 	}
 	system := models.System{SystemName: systemReq.Systemname, OwnerID: user.ID}
-	db.Create(&system)
-	db.First(&system)
-	if system.ID == 0 {
-		return nil, errors.New("Create fail.")
-	}
-
-	admin := models.Admin{UserID: user.ID, SystemID: system.ID, Position: "admin"}
-	db.Create(&admin)
-	db.First(&admin)
-	if system.ID == 0 {
-		return nil, errors.New("Create fail.")
-	}
+	system.AddAdmin(models.Admin{UserID: user.ID, Position: "admin"})
 	for _, lineoa := range systemReq.LineOA {
-		lineoadb := models.LineOA{ChannelName: lineoa.Lineoaname, ChannelID: lineoa.Channelid, ChannelSecret: lineoa.Channeltoken, SystemID: system.ID}
-		db.Create(&lineoadb)
-		if lineoadb.ID == 0 {
-			return nil, errors.New("Create lineoa fail.")
-		}
-		richmenuid, err := CreateRichmenu(lineoadb.ChannelID, lineoadb.ChannelSecret)
+		system.AddLineOA(models.LineOA{
+			ChannelID:     lineoa.Channelid,
+			ChannelName:   lineoa.Lineoaname,
+			ChannelSecret: lineoa.Channeltoken,
+		})
+	}
+	db.Create(&system)
+	db.Save(&system)
+	if system.ID == 0 {
+		return nil, errors.New("Create fail.")
+	}
+	for _, lineoa := range system.LineOA {
+		richmenuid, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret)
 		if err != nil {
 			return nil, err
 		}
-		SetImageToRichMenu(richmenuid.(string), lineoadb.ChannelID, lineoadb.ChannelSecret)
-		SetDefaultRichMenu(richmenuid.(string), lineoadb.ChannelID, lineoadb.ChannelSecret)
+		SetImageToRichMenu(richmenuid.(string), lineoa.ChannelID, lineoa.ChannelSecret)
+		SetDefaultRichMenu(richmenuid.(string), lineoa.ChannelID, lineoa.ChannelSecret)
 	}
-	return systemReq, nil
+	return "systemReq", nil
 }

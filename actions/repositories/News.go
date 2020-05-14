@@ -42,15 +42,15 @@ func CreateNews(c echo.Context) error {
 	tokens, _ := DecodeJWT(jwt)
 	db := database.Open()
 	defer db.Close()
-	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], data.SystemID).Find(&admin)
-	if admin.ID == 0 {
-		return errors.New("You not admin.")
-	}
 	system := models.System{}
 	db.Where("id = ?", data.SystemID).First(&system)
 	if system.ID == 0 {
 		return errors.New("Have not this system.")
+	}
+	admin := models.Admin{}
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], system.ID).Find(&admin)
+	if admin.ID == 0 {
+		return errors.New("You not admin.")
 	}
 	input := ""
 	layout := "02-01-2006"
@@ -61,10 +61,6 @@ func CreateNews(c echo.Context) error {
 	}
 	expiredate, _ := time.Parse(layout, input)
 	news := modelsNews.News{Title: data.Title, Body: data.Body, ExpireDate: expiredate, SystemID: system.ID, AuthorID: admin.ID, Status: data.Status}
-	db.Create(&news)
-	if news.ID == 0 {
-		return errors.New("Create fail.")
-	}
 	for _, newstype := range data.Newstypes {
 		newstypedb := modelsNews.NewsType{}
 		db.Where("id = ?", newstype.ID).Find(&newstypedb)
@@ -72,16 +68,25 @@ func CreateNews(c echo.Context) error {
 			return errors.New("Create fail.")
 		}
 		typeofnews := modelsNews.TypeOfNews{NewsID: news.ID, NewsTypeID: newstypedb.ID}
-		db.Create(&typeofnews)
-		if newstypedb.ID == 0 {
-			return errors.New("Create fail.")
-		}
+		news.AddTypeOfNews(typeofnews)
 	}
-	UploadImages(data.Images, news.ID, system)
+	lastNews := modelsNews.News{}
+	db.Last(&lastNews)
+	if lastNews.ID == 0 {
+		UploadImages(data.Images, "1", system, &news)
+	} else {
+		id := fmt.Sprint(lastNews.ID + 1)
+		UploadImages(data.Images, id, system, &news)
+	}
+	db.Create(&news)
+	db.Save(&news)
+	if news.ID == 0 {
+		return errors.New("Create fail.")
+	}
 	return nil
 }
 
-func UploadImages(images []string, newsID uint, system models.System) error {
+func UploadImages(images []string, newsid string, system models.System, news *modelsNews.News) error {
 	db := database.Open()
 	defer db.Close()
 	for i, image := range images {
@@ -96,7 +101,7 @@ func UploadImages(images []string, newsID uint, system models.System) error {
 		if err != nil {
 			panic(err)
 		}
-		imagename := system.SystemName + "-" + fmt.Sprint(system.ID) + "-" + fmt.Sprint(newsID) + "-" + strconv.Itoa(i) + `.jpg`
+		imagename := system.SystemName + "-" + fmt.Sprint(system.ID) + "-" + newsid + "-" + strconv.Itoa(i) + `.jpg`
 		path := getEnv("FE_PATH", "") + `\public\image\News\` + imagename
 		f, err := os.Create(path)
 		if err != nil {
@@ -110,11 +115,8 @@ func UploadImages(images []string, newsID uint, system models.System) error {
 		if err := f.Sync(); err != nil {
 			panic(err)
 		}
-		img := modelsNews.Image{NewsID: newsID, ImageName: imagename}
-		db.Create(&img)
-		if img.ID == 0 {
-			return errors.New("Upload error.")
-		}
+		img := modelsNews.Image{ImageName: imagename}
+		news.AddImage(img)
 	}
 	return nil
 }
@@ -171,6 +173,7 @@ func CreateNewsType(c echo.Context) (interface{}, error) {
 	}
 	return newsType, nil
 }
+
 func GetAllNewsType(c echo.Context) (interface{}, error) {
 	authorization := c.Request().Header.Get("Authorization")
 	jwt := string([]rune(authorization)[7:])

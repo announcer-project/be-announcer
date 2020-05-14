@@ -42,12 +42,10 @@ func CreateRichmenu(channelid, channeltoken string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Print(bot)
 	res, err := bot.CreateRichMenu(richMenu).Do()
 	if err != nil {
 		return nil, err
 	}
-	log.Print(res.RichMenuID)
 	return res.RichMenuID, nil
 }
 

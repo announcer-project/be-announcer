@@ -19,3 +19,10 @@ type System struct {
 	TargetGroup []modelsMember.TargetGroup `gorm:"foreignkey:SystemID"`
 	LineOA      []LineOA                   `gorm:"foreignkey:SystemID"`
 }
+
+func (system *System) AddAdmin(admin Admin) {
+	system.Admin = append(system.Admin, admin)
+}
+func (system *System) AddLineOA(lineoa LineOA) {
+	system.LineOA = append(system.LineOA, lineoa)
+}
