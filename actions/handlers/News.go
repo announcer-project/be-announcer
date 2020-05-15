@@ -22,8 +22,16 @@ func GetNewsByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, news)
 }
 
-func GetAllNews(c echo.Context) error {
-	news, _ := repositories.GetAllNews(c)
+// func GetAllNews(c echo.Context) error {
+// 	news, _ := repositories.GetAllNews(c)
+// 	return c.JSON(http.StatusOK, news)
+// }
+func GetAllNewsDraft(c echo.Context) error {
+	news, _ := repositories.GetAllNews(c, "draft")
+	return c.JSON(http.StatusOK, news)
+}
+func GetAllNewsPublish(c echo.Context) error {
+	news, _ := repositories.GetAllNews(c, "publish")
 	return c.JSON(http.StatusOK, news)
 }
 

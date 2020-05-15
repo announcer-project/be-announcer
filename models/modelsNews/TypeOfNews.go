@@ -8,6 +8,8 @@ type TypeOfNews struct {
 	gorm.Model
 	NewsID     uint
 	NewsTypeID uint
+
+	NewsTypeName string `gorm:"-"`
 }
 
 func (TypeOfNews) TableName() string {

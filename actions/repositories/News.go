@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -126,26 +127,53 @@ func GetNewsByID(c echo.Context) (interface{}, error) {
 	defer db.Close()
 	news := modelsNews.News{}
 	if c.Param("id") != "" {
-		db.First(&news, c.Param("id"))
+		db.Where("id = ?", c.Param("id")).Preload("TypeOfNews").Preload("Image").Find(&news)
 	} else {
 		db.First(&news, c.FormValue("id"))
+	}
+	for i := 0; i < len(news.TypeOfNews); i++ {
+		newstype := modelsNews.NewsType{}
+		db.Where("id = ?", news.TypeOfNews[i].NewsTypeID).Find(&newstype)
+		news.TypeOfNews[i].NewsTypeName = newstype.NewsTypeName
 	}
 	return news, nil
 }
 
-func GetAllNews(c echo.Context) (interface{}, error) {
+// func GetAllNews(c echo.Context) (interface{}, error) {
+// 	authorization := c.Request().Header.Get("Authorization")
+// 	jwt := string([]rune(authorization)[7:])
+// 	tokens, _ := DecodeJWT(jwt)
+// 	db := database.Open()
+// 	defer db.Close()
+// 	admin := models.Admin{}
+// 	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
+// 	if admin.ID == 0 {
+// 		return nil, errors.New("You not admin in this system.")
+// 	}
+// 	news := []modelsNews.News{}
+// 	db.Where("system_id = ?", c.FormValue("systemid")).Find(&news)
+
+// 	return news, nil
+// }
+
+func GetAllNews(c echo.Context, status string) (interface{}, error) {
 	authorization := c.Request().Header.Get("Authorization")
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := DecodeJWT(jwt)
+	log.Print("test1")
 	db := database.Open()
 	defer db.Close()
+	log.Print("test2")
 	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.QueryParam("systemid")).Find(&admin)
+	log.Print("test3")
 	if admin.ID == 0 {
 		return nil, errors.New("You not admin in this system.")
 	}
+	log.Print("test4")
+	log.Print(admin)
 	news := []modelsNews.News{}
-	db.Where("system_id = ?", c.FormValue("systemid")).Find(&news)
+	db.Where("system_id = ? AND status = ?", c.FormValue("systemid"), status).Preload("TypeOfNews").Find(&news)
 	return news, nil
 }
 

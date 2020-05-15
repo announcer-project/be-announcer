@@ -4,6 +4,7 @@ import (
 	"be_nms/models"
 	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
+	"log"
 	"os"
 
 	"github.com/jinzhu/gorm"
@@ -22,6 +23,7 @@ func Open() *gorm.DB {
 	// db, err := gorm.Open("mysql", "root@tcp(localhost:3306)/test?charset=utf8&parseTime=True&loc=Local")
 	db, err := gorm.Open(getEnv("DB_TYPE", ""), getEnv("DB_USERNAME", "")+`:`+getEnv("DB_PASSWORD", "")+`@tcp(`+getEnv("DB_HOST", "")+`:`+getEnv("DB_PORT", "")+`)/`+getEnv("DB_NAME", "")+`?charset=utf8&parseTime=True&loc=Local`)
 	if err != nil {
+		log.Print(err)
 		panic("failed to connect database")
 	}
 	return db

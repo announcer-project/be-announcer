@@ -24,7 +24,9 @@ func Init() *echo.Echo {
 	e.GET("/system/allsystem", handlers.GetAllSystems)
 	e.POST("/system/create", handlers.CreateSystem)
 	//NewsManagement
-	e.GET("/news/allnews", handlers.GetAllNews)
+	// e.GET("/news/all", handlers.GetAllNews)
+	e.GET("/news/all/draft", handlers.GetAllNewsDraft)
+	e.GET("/news/all/publish", handlers.GetAllNewsPublish)
 	e.POST("/news/create", handlers.CreateNews)
 	e.GET("/news/:id", handlers.GetNewsByID)
 	e.POST("/news/newstype/create", handlers.CreateNewsType)
