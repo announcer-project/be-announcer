@@ -18,6 +18,7 @@ type System struct {
 	Member      []modelsMember.Member      `gorm:"foreignkey:SystemID"`
 	TargetGroup []modelsMember.TargetGroup `gorm:"foreignkey:SystemID"`
 	LineOA      []LineOA                   `gorm:"foreignkey:SystemID"`
+	Role        []Role                     `gorm:"foreignkey:SystemID"`
 }
 
 func (system *System) AddAdmin(admin Admin) {

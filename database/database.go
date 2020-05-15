@@ -41,6 +41,7 @@ func Migration(db *gorm.DB) {
 		&modelsNews.TypeOfNews{},
 		&modelsMember.TargetGroup{},
 		&models.LineOA{},
+		&models.Role{},
 	)
 }
 

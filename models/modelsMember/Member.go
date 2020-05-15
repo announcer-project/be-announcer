@@ -8,6 +8,7 @@ type Member struct {
 	gorm.Model
 	UserID   string
 	SystemID uint
+	RoleID   uint
 
 	MemberGroup []MemberGroup `gorm:"foreignkey:MemberID"`
 	// News     []modelsNews.News     `gorm:"foreignkey:SystemID"`

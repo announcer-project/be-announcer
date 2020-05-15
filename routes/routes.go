@@ -35,6 +35,9 @@ func Init() *echo.Echo {
 	//TargetGroup
 	e.POST("/targetgroup/create", handlers.CreateTargetGroup)
 	e.GET("/targetgroup/all", handlers.GetAllTargetGroup)
+	//Role
+	e.POST("/role/create", handlers.CreateRole)
+	e.GET("/role/all", handlers.GetAllRole)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 
