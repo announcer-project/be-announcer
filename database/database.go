@@ -4,12 +4,23 @@ import (
 	"be_nms/models"
 	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
+	"os"
 
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
+func getEnv(key string, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+
+	return defaultVal
+}
+
 func Open() *gorm.DB {
-	db, err := gorm.Open("mysql", "root@tcp(localhost:3306)/test?charset=utf8&parseTime=True&loc=Local")
+	// db, err := gorm.Open("mysql", "root@tcp(localhost:3306)/test?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open(getEnv("DB_TYPE", ""), getEnv("DB_USERNAME", "")+`:`+getEnv("DB_PASSWORD", "")+`@tcp(`+getEnv("DB_HOST", "")+`:`+getEnv("DB_PORT", "")+`)/`+getEnv("DB_NAME", "")+`?charset=utf8&parseTime=True&loc=Local`)
 	if err != nil {
 		panic("failed to connect database")
 	}
