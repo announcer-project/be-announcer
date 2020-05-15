@@ -9,7 +9,7 @@ import (
 type News struct {
 	gorm.Model
 	Title      string
-	Body       string
+	Body       string `sql:"type:text;"`
 	ExpireDate time.Time
 	SystemID   uint
 	AuthorID   uint
