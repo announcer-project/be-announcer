@@ -67,7 +67,7 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		return nil, errors.New("Create fail.")
 	}
 	for _, lineoa := range system.LineOA {
-		richmenuid, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret)
+		richmenuid, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret, system.SystemName, system.ID)
 		if err != nil {
 			return nil, err
 		}
