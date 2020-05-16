@@ -33,7 +33,7 @@ func CreateRichmenu(channelid, channeltoken, system string, systemid uint) (inte
 				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeURI,
-					URI:  getEnv("LINE_LIFF", "") + "/line/register" + system + fmt.Sprint(systemid),
+					URI:  getEnv("LINE_LIFF", "") + "/line/register/" + system + "/" + fmt.Sprint(systemid),
 					Text: "click me",
 				},
 			},
@@ -55,7 +55,7 @@ func SetImageToRichMenu(richmenu, channelid, channeltoken string) error {
 	if err != nil {
 		return err
 	}
-	image := "https://sqlvafao4cvoaektc2.blob.core.windows.net/images/rich%20menu%20%235.png?sv=2019-10-10&ss=bqtf&srt=sco&sp=rwdlacuptfx&se=2020-05-17T01:58:41Z&sig=j0%2B5SfSEs2tYGeHksHTFfsFy8i1cGJcdvOe0QIeXR9w%3D&_=1589652595567"
+	image := "https://sqlvafao4cvoaektc2.blob.core.windows.net/images/rich-menu.png"
 	if _, err := bot.UploadRichMenuImage(richmenu, image).Do(); err != nil {
 		return err
 	}
