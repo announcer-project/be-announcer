@@ -36,20 +36,12 @@ func CreateRole(c echo.Context) (interface{}, error) {
 }
 
 func GetAllRole(c echo.Context) (interface{}, error) {
-	authorization := c.Request().Header.Get("Authorization")
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := DecodeJWT(jwt)
 	db := database.Open()
 	defer db.Close()
 	system := models.System{}
 	db.Where("id = ? AND system_name = ?", c.QueryParam("systemid"), c.QueryParam("systemname")).Find(&system)
 	if system.ID == 0 {
 		return nil, errors.New("Not have this system.")
-	}
-	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.QueryParam("systemid")).Find(&admin)
-	if admin.ID == 0 {
-		return nil, errors.New("You not admin in this system.")
 	}
 	roleuser := []models.Role{}
 	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&roleuser)

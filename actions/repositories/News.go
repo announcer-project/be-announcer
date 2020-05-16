@@ -71,14 +71,14 @@ func CreateNews(c echo.Context) error {
 		typeofnews := modelsNews.TypeOfNews{NewsID: news.ID, NewsTypeID: newstypedb.ID}
 		news.AddTypeOfNews(typeofnews)
 	}
-	lastNews := modelsNews.News{}
-	db.Last(&lastNews)
-	if lastNews.ID == 0 {
-		UploadImages(data.Images, "1", system, &news)
-	} else {
-		id := fmt.Sprint(lastNews.ID + 1)
-		UploadImages(data.Images, id, system, &news)
-	}
+	// lastNews := modelsNews.News{}
+	// db.Last(&lastNews)
+	// if lastNews.ID == 0 {
+	// 	UploadImages(data.Images, "1", system, &news)
+	// } else {
+	// 	id := fmt.Sprint(lastNews.ID + 1)
+	// 	UploadImages(data.Images, id, system, &news)
+	// }
 	db.Create(&news)
 	db.Save(&news)
 	if news.ID == 0 {
@@ -203,20 +203,12 @@ func CreateNewsType(c echo.Context) (interface{}, error) {
 }
 
 func GetAllNewsType(c echo.Context) (interface{}, error) {
-	authorization := c.Request().Header.Get("Authorization")
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := DecodeJWT(jwt)
 	db := database.Open()
 	defer db.Close()
 	system := models.System{}
 	db.Where("id = ? AND system_name = ?", c.QueryParam("systemid"), c.QueryParam("systemname")).Find(&system)
 	if system.ID == 0 {
 		return nil, errors.New("Not have this system.")
-	}
-	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.QueryParam("systemid")).Find(&admin)
-	if admin.ID == 0 {
-		return nil, errors.New("You not admin in this system.")
 	}
 	newsTypes := []modelsNews.NewsType{}
 	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&newsTypes)
