@@ -40,6 +40,8 @@ func Init() *echo.Echo {
 	e.GET("/role/all", handlers.GetAllRole)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
+	//Liff
+	e.POST("/line/register", handlers.CreateMember)
 
 	//Line API Richmenu
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
