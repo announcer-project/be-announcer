@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -33,20 +34,24 @@ func CreateRichmenu(channelid, channeltoken, system string, systemid uint) (inte
 				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeURI,
-					URI:  getEnv("LINE_LIFF", "") + "/line/register/" + system + "/" + fmt.Sprint(systemid),
+					URI:  getEnv("LINE_LIFF", "") + "?system=" + system + "&systemid=" + fmt.Sprint(systemid),
 					Text: "click me",
 				},
 			},
 		},
 	}
+	log.Print(getEnv("LINE_LIFF", "") + "?system=" + system + "&systemid=" + fmt.Sprint(systemid))
 	bot, err := linebot.New(channelid, channeltoken)
 	if err != nil {
 		return nil, err
 	}
+	log.Print(richMenu)
 	res, err := bot.CreateRichMenu(richMenu).Do()
 	if err != nil {
+		log.Print(err)
 		return nil, err
 	}
+	log.Print(res.RichMenuID)
 	return res.RichMenuID, nil
 }
 
@@ -55,10 +60,14 @@ func SetImageToRichMenu(richmenu, channelid, channeltoken string) error {
 	if err != nil {
 		return err
 	}
-	image := "https://sqlvafao4cvoaektc2.blob.core.windows.net/images/rich-menu.png"
-	if _, err := bot.UploadRichMenuImage(richmenu, image).Do(); err != nil {
+	imagePath, err := GetFile("rich-menu.png")
+	if err != nil {
 		return err
 	}
+	if _, err := bot.UploadRichMenuImage(richmenu, imagePath).Do(); err != nil {
+		return err
+	}
+	os.Remove(imagePath)
 	return nil
 }
 
