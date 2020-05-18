@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"be_nms/actions/repositories"
+	"be_nms/models"
 	"be_nms/models/modelsNews"
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -10,15 +12,15 @@ import (
 
 //News
 func CreateNews(c echo.Context) error {
-	err := repositories.CreateNews(c)
+	newsID, err := repositories.CreateNews(c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	return c.JSON(http.StatusOK, "Create success.")
+	return c.JSON(http.StatusOK, newsID)
 }
 
 func GetNewsByID(c echo.Context) error {
-	news, _ := repositories.GetNewsByID(c)
+	news, _ := repositories.GetNewsByID(c, c.Param("id"))
 	return c.JSON(http.StatusOK, news)
 }
 
@@ -53,11 +55,18 @@ func GetAlNewsType(c echo.Context) error {
 
 //Announce
 func AnnounceNews(c echo.Context) error {
-	news, err := repositories.GetNewsByID(c)
+	log.Print(c.FormValue("newsid"))
+	log.Print(c.FormValue("systemid"))
+	news, err := repositories.GetNewsByID(c, c.FormValue("newsid"))
 	if err != nil {
-		return c.JSON(http.StatusOK, err)
+		return c.JSON(http.StatusBadRequest, err)
 	}
-	announce, err := repositories.BroadcastNewsLine(c, news.(modelsNews.News))
+	log.Print(news)
+	system, err := repositories.GetSystemByID(c, c.FormValue("systemid"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+	announce, err := repositories.BroadcastNewsLine(c, news.(modelsNews.News), system.(models.System))
 	if !announce {
 		return c.JSON(http.StatusOK, err)
 	}
