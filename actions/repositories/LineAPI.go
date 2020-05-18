@@ -40,7 +40,7 @@ func CreateRichmenu(channelid, channeltoken, system string, systemid uint) (inte
 			},
 		},
 	}
-	log.Print(getEnv("LINE_LIFF", "") + "?system=" + system + "&systemid=" + fmt.Sprint(systemid))
+	log.Print(getEnv("LINE_LIFF", "") + "/line/" + system + "/" + fmt.Sprint(systemid) + "/register")
 	bot, err := linebot.New(channelid, channeltoken)
 	if err != nil {
 		return nil, err
