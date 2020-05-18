@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"unicode/utf8"
 
 	strip "github.com/grokify/html-strip-tags-go"
 	"github.com/labstack/echo/v4"
@@ -112,11 +113,15 @@ func BroadcastNewsLine(c echo.Context, news modelsNews.News, system models.Syste
 	newsCard := modelsLineAPI.CardLine{}
 	link := getEnv("LINE_LIFF", "") + "/line/news/" + fmt.Sprint(news.ID)
 	titleNews := news.Title
-	if len(titleNews) > 40 {
+	log.Print("t:", utf8.RuneCountInString(titleNews))
+	if utf8.RuneCountInString(titleNews) > 40 {
+		log.Print("t:", utf8.RuneCountInString(titleNews))
 		titleNews = string([]rune(news.Title)[0:37]) + "..."
 	}
 	bodyNews := strip.StripTags(news.Body)
-	if len(bodyNews) > 40 {
+	log.Print("b:", utf8.RuneCountInString(bodyNews))
+	if utf8.RuneCountInString(bodyNews) > 40 {
+		log.Print("b:", utf8.RuneCountInString(bodyNews))
 		bodyNews = string([]rune(bodyNews)[0:57]) + "..."
 	}
 	newsCard.CreateCardLine(link, titleNews, bodyNews)
