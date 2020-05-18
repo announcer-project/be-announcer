@@ -34,7 +34,7 @@ func CreateRichmenu(channelid, channeltoken, system string, systemid uint) (inte
 				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeURI,
-					URI:  getEnv("LINE_LIFF", "") + "?system=" + system + "&systemid=" + fmt.Sprint(systemid),
+					URI:  getEnv("LINE_LIFF", "") + "/line/" + system + "/" + fmt.Sprint(systemid) + "/register",
 					Text: "click me",
 				},
 			},
