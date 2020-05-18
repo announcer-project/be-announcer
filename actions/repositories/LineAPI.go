@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"be_nms/database"
+	"be_nms/models"
 	"be_nms/models/modelsLineAPI"
 	"be_nms/models/modelsNews"
 	"bytes"
@@ -11,6 +13,7 @@ import (
 	"net/http"
 	"os"
 
+	strip "github.com/grokify/html-strip-tags-go"
 	"github.com/labstack/echo/v4"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
@@ -101,9 +104,17 @@ func SetDefaultRichMenu(richmenuid, channelid, channeltoken string) error {
 // 	return true
 // }
 
-func BroadcastNewsLine(c echo.Context, news modelsNews.News) (bool, error) {
+func BroadcastNewsLine(c echo.Context, news modelsNews.News, system models.System) (bool, error) {
+	lineoa := models.LineOA{}
+	db := database.Open()
+	defer db.Close()
+	db.Where("system_id = ?", system.ID).Find(&lineoa)
 	newsCard := modelsLineAPI.CardLine{}
-	newsCard.CreateCardLine("https://www.google.com", news.Title, news.Body)
+	link := getEnv("LINE_LIFF", "") + "/line/news/" + fmt.Sprint(news.ID)
+	titleNews := string([]rune(news.Title)[0:37]) + "..."
+	bodyNews := strip.StripTags(news.Body)
+	bodyNews = string([]rune(bodyNews)[0:57]) + "..."
+	newsCard.CreateCardLine(link, titleNews, bodyNews)
 	cards := []modelsLineAPI.CardLine{newsCard}
 	messages := LineBroadcastMessage{cards}
 	messagesJSON, _ := json.Marshal(messages)
@@ -113,7 +124,7 @@ func BroadcastNewsLine(c echo.Context, news modelsNews.News) (bool, error) {
 	client := &http.Client{}
 	request, _ := http.NewRequest("POST", "https://api.line.me/v2/bot/message/broadcast", bytes.NewBuffer(jsonStr))
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", "Bearer "+getEnv("CHANNEL_ACCESS_TOKEN", ""))
+	request.Header.Set("Authorization", "Bearer "+lineoa.ChannelSecret)
 	res, err := client.Do(request)
 	defer res.Body.Close()
 	if err != nil {

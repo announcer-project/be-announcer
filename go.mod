@@ -6,6 +6,7 @@ require (
 	github.com/Azure/azure-pipeline-go v0.2.2 // indirect
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/grokify/html-strip-tags-go v0.0.0-20200322061010-ea0c1cf2f119
 	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo v3.3.10+incompatible
