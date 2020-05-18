@@ -62,6 +62,8 @@ func RegisterGetNews(c echo.Context) (interface{}, error) {
 	if membergroup.ID == 0 {
 		return nil, errors.New("Add member to group error.")
 	}
+	targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
+	tx.Save(&targetgroup)
 	tx.Commit()
 	return membergroup, nil
 }

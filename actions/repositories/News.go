@@ -33,10 +33,10 @@ type News struct {
 }
 
 //News
-func CreateNews(c echo.Context) error {
+func CreateNews(c echo.Context) (interface{}, error) {
 	data := News{}
 	if err := c.Bind(&data); err != nil {
-		return err
+		return nil, err
 	}
 	authorization := c.Request().Header.Get("Authorization")
 	jwt := string([]rune(authorization)[7:])
@@ -46,12 +46,12 @@ func CreateNews(c echo.Context) error {
 	system := models.System{}
 	db.Where("id = ?", data.SystemID).First(&system)
 	if system.ID == 0 {
-		return errors.New("Have not this system.")
+		return nil, errors.New("Have not this system.")
 	}
 	admin := models.Admin{}
 	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], system.ID).Find(&admin)
 	if admin.ID == 0 {
-		return errors.New("You not admin.")
+		return nil, errors.New("You not admin.")
 	}
 	input := ""
 	layout := "02-01-2006"
@@ -66,7 +66,7 @@ func CreateNews(c echo.Context) error {
 		newstypedb := modelsNews.NewsType{}
 		db.Where("id = ?", newstype.ID).Find(&newstypedb)
 		if newstypedb.ID == 0 {
-			return errors.New("Create fail.")
+			return nil, errors.New("Create fail.")
 		}
 		typeofnews := modelsNews.TypeOfNews{NewsID: news.ID, NewsTypeID: newstypedb.ID}
 		news.AddTypeOfNews(typeofnews)
@@ -82,9 +82,9 @@ func CreateNews(c echo.Context) error {
 	db.Create(&news)
 	db.Save(&news)
 	if news.ID == 0 {
-		return errors.New("Create fail.")
+		return nil, errors.New("Create fail.")
 	}
-	return nil
+	return news.ID, nil
 }
 
 func UploadImages(images []string, newsid string, system models.System, news *modelsNews.News) error {
@@ -114,14 +114,13 @@ func UploadImages(images []string, newsid string, system models.System, news *mo
 	return nil
 }
 
-func GetNewsByID(c echo.Context) (interface{}, error) {
+func GetNewsByID(c echo.Context, id string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	news := modelsNews.News{}
-	if c.Param("id") != "" {
-		db.Where("id = ?", c.Param("id")).Preload("TypeOfNews").Preload("Image").Find(&news)
-	} else {
-		db.First(&news, c.FormValue("id"))
+	db.Where("id = ?", id).Preload("TypeOfNews").Preload("Image").Find(&news)
+	if news.ID == 0 {
+		return nil, errors.New("Get news error.")
 	}
 	for i := 0; i < len(news.TypeOfNews); i++ {
 		newstype := modelsNews.NewsType{}

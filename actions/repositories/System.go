@@ -27,6 +27,26 @@ func GetAllsystems(c echo.Context) (interface{}, error) {
 	return systems, nil
 }
 
+func GetSystemByID(c echo.Context, id string) (interface{}, error) {
+	db := database.Open()
+	defer db.Close()
+	authorization := c.Request().Header.Get("Authorization")
+	log.Print(authorization)
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := DecodeJWT(jwt)
+	admin := models.Admin{}
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], id).Find(&admin)
+	if admin.ID == 0 {
+		return nil, errors.New("You not admin.")
+	}
+	system := models.System{}
+	db.Where("id = ?", id).Find(&system)
+	if system.ID == 0 {
+		return nil, errors.New("System not found.")
+	}
+	return system, nil
+}
+
 type System struct {
 	Systemname string
 	LineOA     []LineOA
