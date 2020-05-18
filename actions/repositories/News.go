@@ -71,14 +71,14 @@ func CreateNews(c echo.Context) error {
 		typeofnews := modelsNews.TypeOfNews{NewsID: news.ID, NewsTypeID: newstypedb.ID}
 		news.AddTypeOfNews(typeofnews)
 	}
-	// lastNews := modelsNews.News{}
-	// db.Last(&lastNews)
-	// if lastNews.ID == 0 {
-	// 	UploadImages(data.Images, "1", system, &news)
-	// } else {
-	// 	id := fmt.Sprint(lastNews.ID + 1)
-	// 	UploadImages(data.Images, id, system, &news)
-	// }
+	lastNews := modelsNews.News{}
+	db.Last(&lastNews)
+	if lastNews.ID == 0 {
+		UploadImages(data.Images, "1", system, &news)
+	} else {
+		id := fmt.Sprint(lastNews.ID + 1)
+		UploadImages(data.Images, id, system, &news)
+	}
 	db.Create(&news)
 	db.Save(&news)
 	if news.ID == 0 {
@@ -103,21 +103,13 @@ func UploadImages(images []string, newsid string, system models.System, news *mo
 			panic(err)
 		}
 		imagename := system.SystemName + "-" + fmt.Sprint(system.ID) + "-" + newsid + "-" + strconv.Itoa(i) + `.jpg`
-		path := getEnv("FE_PATH", "") + `\public\image\News\` + imagename
-		f, err := os.Create(path)
+		err = CreateFile(dec, imagename)
 		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-
-		if _, err := f.Write(dec); err != nil {
-			panic(err)
-		}
-		if err := f.Sync(); err != nil {
-			panic(err)
+			return err
 		}
 		img := modelsNews.Image{ImageName: imagename}
 		news.AddImage(img)
+		os.Remove(imagename)
 	}
 	return nil
 }
