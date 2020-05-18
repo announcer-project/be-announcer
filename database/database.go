@@ -43,6 +43,7 @@ func Migration(db *gorm.DB) {
 		&models.LineOA{},
 		&models.Role{},
 		&modelsMember.Member{},
+		&modelsMember.MemberGroup{},
 	)
 }
 
