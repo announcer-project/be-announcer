@@ -111,9 +111,14 @@ func BroadcastNewsLine(c echo.Context, news modelsNews.News, system models.Syste
 	db.Where("system_id = ?", system.ID).Find(&lineoa)
 	newsCard := modelsLineAPI.CardLine{}
 	link := getEnv("LINE_LIFF", "") + "/line/news/" + fmt.Sprint(news.ID)
-	titleNews := string([]rune(news.Title)[0:37]) + "..."
+	titleNews := news.Title
+	if len(titleNews) > 40 {
+		titleNews = string([]rune(news.Title)[0:37]) + "..."
+	}
 	bodyNews := strip.StripTags(news.Body)
-	bodyNews = string([]rune(bodyNews)[0:57]) + "..."
+	if len(bodyNews) > 40 {
+		bodyNews = string([]rune(bodyNews)[0:57]) + "..."
+	}
 	newsCard.CreateCardLine(link, titleNews, bodyNews)
 	cards := []modelsLineAPI.CardLine{newsCard}
 	messages := LineBroadcastMessage{cards}
