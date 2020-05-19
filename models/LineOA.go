@@ -1,6 +1,8 @@
 package models
 
 import (
+	"be_nms/models/modelsLineAPI"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -10,6 +12,8 @@ type LineOA struct {
 	ChannelID     string
 	ChannelSecret string
 	SystemID      uint
+
+	RichMenu []modelsLineAPI.RichMenu `gorm:"foreignkey:LineOAID"`
 }
 
 func (LineOA) TableName() string {

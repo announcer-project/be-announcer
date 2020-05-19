@@ -3,6 +3,7 @@ package repositories
 import (
 	"be_nms/database"
 	"be_nms/models"
+	"be_nms/models/modelsLineAPI"
 	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
 	"errors"
@@ -65,5 +66,12 @@ func RegisterGetNews(c echo.Context) (interface{}, error) {
 	targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
 	tx.Save(&targetgroup)
 	tx.Commit()
+	lineoa := []models.LineOA{}
+	db.Where("system_id = ?", system.ID).Find(&lineoa)
+	for _, line := range lineoa {
+		richmenu := modelsLineAPI.RichMenu{}
+		db.Where("line_oa_id = ? AND status = ?", line.ID, "afterregister").Find(&richmenu)
+		SetAfterRegisterRichMenu(richmenu.RichID, line.ChannelID, line.ChannelSecret, user.LineID)
+	}
 	return membergroup, nil
 }

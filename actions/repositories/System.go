@@ -3,6 +3,7 @@ package repositories
 import (
 	"be_nms/database"
 	"be_nms/models"
+	"be_nms/models/modelsLineAPI"
 	"errors"
 	"log"
 
@@ -82,7 +83,6 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		})
 	}
 	db.Create(&system)
-	db.Save(&system)
 	if system.ID == 0 {
 		return nil, errors.New("Create fail.")
 	}
@@ -91,8 +91,25 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		SetImageToRichMenu(richmenuid.(string), lineoa.ChannelID, lineoa.ChannelSecret)
-		SetDefaultRichMenu(richmenuid.(string), lineoa.ChannelID, lineoa.ChannelSecret)
+		richmenu := modelsLineAPI.RichMenu{RichID: richmenuid.(string), Status: "defalut", LineOAID: lineoa.ID}
+		db.Create(&richmenu)
+		if richmenu.ID == 0 {
+			return nil, errors.New("Create rich menu errorr.")
+		}
+		SetImageToRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, "rich-menu.png")
+		SetDefaultRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret)
+		richmenuid2, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret, system.SystemName, system.ID)
+		if err != nil {
+			return nil, err
+		}
+		richmenu2 := modelsLineAPI.RichMenu{RichID: richmenuid2.(string), Status: "afterregister", LineOAID: lineoa.ID}
+		db.Create(&richmenu2)
+		if richmenu2.ID == 0 {
+			return nil, errors.New("Create rich menu errorr.")
+		}
+		SetImageToRichMenu(richmenu2.RichID, lineoa.ChannelID, lineoa.ChannelSecret, "rich-afterregister.png")
+		// SetAfterRegisterRichMenu(richmenu2.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID)
 	}
+	db.Save(&system)
 	return "systemReq", nil
 }

@@ -59,12 +59,12 @@ func CreateRichmenu(channelid, channeltoken, system string, systemid uint) (inte
 	return res.RichMenuID, nil
 }
 
-func SetImageToRichMenu(richmenu, channelid, channeltoken string) error {
+func SetImageToRichMenu(richmenu, channelid, channeltoken, image string) error {
 	bot, err := linebot.New(channelid, channeltoken)
 	if err != nil {
 		return err
 	}
-	imagePath, err := GetFile("rich-menu.png")
+	imagePath, err := GetFile(image)
 	if err != nil {
 		return err
 	}
@@ -81,6 +81,16 @@ func SetDefaultRichMenu(richmenuid, channelid, channeltoken string) error {
 		return err
 	}
 	if _, err = bot.SetDefaultRichMenu(richmenuid).Do(); err != nil {
+		return err
+	}
+	return nil
+}
+func SetAfterRegisterRichMenu(richmenuid, channelid, channeltoken, lineuserid string) error {
+	bot, err := linebot.New(channelid, channeltoken)
+	if err != nil {
+		return err
+	}
+	if _, err = bot.LinkUserRichMenu(lineuserid, richmenuid).Do(); err != nil {
 		return err
 	}
 	return nil

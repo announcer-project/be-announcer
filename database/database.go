@@ -2,6 +2,7 @@ package database
 
 import (
 	"be_nms/models"
+	"be_nms/models/modelsLineAPI"
 	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
 	"log"
@@ -44,6 +45,7 @@ func Migration(db *gorm.DB) {
 		&models.Role{},
 		&modelsMember.Member{},
 		&modelsMember.MemberGroup{},
+		&modelsLineAPI.RichMenu{},
 	)
 }
 
