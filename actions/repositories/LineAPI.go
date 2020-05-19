@@ -27,24 +27,7 @@ type RichMenuID struct {
 	Richmenuid string `json:"richMenuId"`
 }
 
-func CreateRichmenu(channelid, channeltoken, system string, systemid uint) (interface{}, error) {
-	richMenu := linebot.RichMenu{
-		Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
-		Selected:    true,
-		Name:        "Default rich menu register",
-		ChatBarText: "Register",
-		Areas: []linebot.AreaDetail{
-			{
-				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
-				Action: linebot.RichMenuAction{
-					Type: linebot.RichMenuActionTypeURI,
-					URI:  getEnv("LINE_LIFF", "") + "/line/" + system + "/" + fmt.Sprint(systemid) + "/register",
-					Text: "click me",
-				},
-			},
-		},
-	}
-	log.Print(getEnv("LINE_LIFF", "") + "/line/" + system + "/" + fmt.Sprint(systemid) + "/register")
+func CreateRichmenu(channelid, channeltoken, richname string, richMenu linebot.RichMenu) (interface{}, error) {
 	bot, err := linebot.New(channelid, channeltoken)
 	if err != nil {
 		return nil, err

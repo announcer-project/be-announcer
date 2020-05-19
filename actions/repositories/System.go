@@ -5,9 +5,11 @@ import (
 	"be_nms/models"
 	"be_nms/models/modelsLineAPI"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/labstack/echo/v4"
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 func GetAllsystems(c echo.Context) (interface{}, error) {
@@ -87,7 +89,23 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		return nil, errors.New("Create fail.")
 	}
 	for _, lineoa := range system.LineOA {
-		richmenuid, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret, system.SystemName, system.ID)
+		richMenu := linebot.RichMenu{
+			Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
+			Selected:    true,
+			Name:        "Register",
+			ChatBarText: "Register",
+			Areas: []linebot.AreaDetail{
+				{
+					Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
+					Action: linebot.RichMenuAction{
+						Type: linebot.RichMenuActionTypeURI,
+						URI:  getEnv("LINE_LIFF", "") + "/line/" + system.SystemName + "/" + fmt.Sprint(system.ID) + "/register",
+						Text: "click me",
+					},
+				},
+			},
+		}
+		richmenuid, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret, "Register", richMenu)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +116,51 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		}
 		SetImageToRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, "rich-menu.png")
 		SetDefaultRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret)
-		richmenuid2, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret, system.SystemName, system.ID)
+		richMenu2 := linebot.RichMenu{
+			Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
+			Selected:    true,
+			Name:        "Menu",
+			ChatBarText: "Menu",
+			Areas: []linebot.AreaDetail{
+				{
+					Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 1683, Height: 839},
+					Action: linebot.RichMenuAction{
+						Type: linebot.RichMenuActionTypeURI,
+						URI:  "https://www.sit.kmutt.ac.th/",
+						Text: "click me",
+					},
+				},
+				{
+					Bounds: linebot.RichMenuBounds{X: 1683, Y: 0, Width: 817, Height: 839},
+					Action: linebot.RichMenuAction{
+						Type: linebot.RichMenuActionTypeMessage,
+						Text: "โปรไฟล์ของฉัน",
+					},
+				},
+				{
+					Bounds: linebot.RichMenuBounds{X: 0, Y: 834, Width: 830, Height: 852},
+					Action: linebot.RichMenuAction{
+						Type: linebot.RichMenuActionTypeMessage,
+						Text: "ทุนการศึกษา",
+					},
+				},
+				{
+					Bounds: linebot.RichMenuBounds{X: 830, Y: 839, Width: 853, Height: 847},
+					Action: linebot.RichMenuAction{
+						Type: linebot.RichMenuActionTypeMessage,
+						Text: "ผลงานและกิจกรรม",
+					},
+				},
+				{
+					Bounds: linebot.RichMenuBounds{X: 1682, Y: 839, Width: 818, Height: 847},
+					Action: linebot.RichMenuAction{
+						Type: linebot.RichMenuActionTypeMessage,
+						Text: "อยากคุยกับน้องบอท",
+					},
+				},
+			},
+		}
+		richmenuid2, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret, "Menu", richMenu2)
 		if err != nil {
 			return nil, err
 		}
