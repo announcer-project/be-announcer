@@ -23,11 +23,12 @@ type UserIdSocial struct {
 }
 
 func GetUserIDLine(c echo.Context) (string, error) {
+	code := c.Request().Header.Get("Code")
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("client_id", getEnv("CLIENT_ID", ""))
 	data.Set("client_secret", getEnv("CLIENT_SECRET", ""))
-	data.Set("code", c.FormValue("code"))
+	data.Set("code", code)
 	data.Set("redirect_uri", getEnv("REDIRECT_URI", ""))
 	client := &http.Client{}
 	request, _ := http.NewRequest("POST", "https://api.line.me/oauth2/v2.1/token", strings.NewReader(data.Encode()))

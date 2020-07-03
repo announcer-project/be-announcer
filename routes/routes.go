@@ -18,13 +18,14 @@ func Init() *echo.Echo {
 		return c.String(http.StatusOK, "Welcome to News Management System")
 	})
 	//Account
-	e.POST("/linelogin", handlers.LineLogin)
+	e.GET("/linelogin", handlers.LineLogin)
 	e.POST("/register", handlers.Register)
 	//System
 	e.GET("/system/allsystem", handlers.GetAllSystems)
 	e.POST("/system/create", handlers.CreateSystem)
 	//NewsManagement
-	// e.GET("/news/all", handlers.GetAllNews)
+	e.GET("/aboutsystem", handlers.GetAllAboutSystem)
+	e.GET("/news/all/classify", handlers.GetAllNewsByClassify)
 	e.GET("/news/all/draft", handlers.GetAllNewsDraft)
 	e.GET("/news/all/publish", handlers.GetAllNewsPublish)
 	e.POST("/news/create", handlers.CreateNews)

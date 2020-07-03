@@ -28,6 +28,17 @@ func GetNewsByID(c echo.Context) error {
 // 	news, _ := repositories.GetAllNews(c)
 // 	return c.JSON(http.StatusOK, news)
 // }
+type AllNewsClassify struct {
+	NewsDraft   []modelsNews.News `json:"newsdraft"`
+	NewsPublish []modelsNews.News `json:"newspublish"`
+}
+
+func GetAllNewsByClassify(c echo.Context) error {
+	newsDraft, _ := repositories.GetAllNews(c, "draft")
+	newsPublish, _ := repositories.GetAllNews(c, "publish")
+	allnews := AllNewsClassify{NewsDraft: newsDraft.([]modelsNews.News), NewsPublish: newsPublish.([]modelsNews.News)}
+	return c.JSON(http.StatusOK, allnews)
+}
 func GetAllNewsDraft(c echo.Context) error {
 	news, _ := repositories.GetAllNews(c, "draft")
 	return c.JSON(http.StatusOK, news)

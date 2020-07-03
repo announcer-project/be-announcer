@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo/v4/middleware"
 )
 
