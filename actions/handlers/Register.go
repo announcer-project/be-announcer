@@ -16,3 +16,10 @@ func Register(c echo.Context) error {
 	jwt := repositories.EncodeJWT(user.(models.User))
 	return c.JSON(http.StatusOK, jwt)
 }
+
+func SendOTP(c echo.Context) error {
+	otp := c.FormValue("otp")
+	email := c.FormValue("email")
+	go repositories.SendEmail("OTP", email, otp)
+	return c.JSON(http.StatusOK, "Send OTP Success!")
+}

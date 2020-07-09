@@ -20,6 +20,7 @@ func Init() *echo.Echo {
 	//Account
 	e.GET("/linelogin", handlers.Login)
 	e.POST("/register", handlers.Register)
+	e.POST("/register/sendotp", handlers.SendOTP)
 	//System
 	e.GET("/system/allsystem", handlers.GetAllSystems)
 	e.POST("/system/create", handlers.CreateSystem)
