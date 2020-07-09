@@ -18,7 +18,7 @@ func Init() *echo.Echo {
 		return c.String(http.StatusOK, "Welcome to News Management System")
 	})
 	//Account
-	e.GET("/linelogin", handlers.LineLogin)
+	e.GET("/linelogin", handlers.Login)
 	e.POST("/register", handlers.Register)
 	//System
 	e.GET("/system/allsystem", handlers.GetAllSystems)

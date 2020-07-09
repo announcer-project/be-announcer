@@ -54,6 +54,11 @@ func GetUserBySocialId(UserId, Social string) (interface{}, error) {
 		if user.ID == "" {
 			return nil, errors.New("You don't register.")
 		}
+	} else if Social == "facebook" {
+		db.First(&user, "facebook_id = ?", UserId)
+		if user.ID == "" {
+			return nil, errors.New("You don't register.")
+		}
 	}
 	return user, nil
 }
