@@ -23,7 +23,7 @@ func Login(c echo.Context) error {
 	}
 	user, err := repositories.GetUserBySocialId(userID, social)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "not user")
+		return c.JSON(http.StatusBadRequest, userID)
 	}
 	jwt := repositories.EncodeJWT(user.(models.User))
 	return c.JSON(http.StatusOK, jwt)

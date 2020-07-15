@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -39,7 +38,6 @@ func GetUserIDLine(c echo.Context) (string, error) {
 		return "nil", err
 	}
 	body, _ := ioutil.ReadAll(res.Body)
-	log.Print(string(body))
 	token := Token{}
 	json.Unmarshal(body, &token)
 	profile, _ := DecodeJWT(token.ID_Token)
