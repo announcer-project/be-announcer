@@ -26,7 +26,7 @@ func (u *User) BeforeCreate(scope *gorm.Scope) error {
 }
 
 func GenUserID() string {
-	UserID := "NMS"
+	UserID := "ANNION"
 	for i := 0; i < 16; i++ {
 		ranType := rand.Intn(2)
 		switch ranType {

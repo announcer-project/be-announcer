@@ -9,16 +9,44 @@ import (
 )
 
 func Register(c echo.Context) (interface{}, error) {
-	user := models.User{}
 	db := database.Open()
-	db.Where("email = ? OR line_id = ?", c.FormValue("email"), c.FormValue("line")).First(&user)
+	user := models.User{}
+	db.Where("email = ?", c.FormValue("email")).First(&user)
 	if user.ID != "" {
 		return user, errors.New("You have account.")
 	}
+	tx := db.Begin()
 	user.CreateUser(c.FormValue("fname"), c.FormValue("lname"), c.FormValue("email"), c.FormValue("line"), c.FormValue("facebook"), c.FormValue("google"))
-	db.Create(&user)
-	if user.ID == "" {
+	if err := tx.Create(&user).Error; err != nil {
+		tx.Rollback()
 		return nil, errors.New("Register fail.")
+	}
+	sess := ConnectFileStorage()
+	imageByte := Base64toByte(c.FormValue("imageprofile"))
+	if err := CreateFile(sess, imageByte, user.ID+".jpg", "/profile"); err != nil {
+		tx.Rollback()
+		return nil, errors.New("Register fail.")
+	}
+	tx.Commit()
+	return user, nil
+}
+
+func CheckUserByEmail(email string) (interface{}, error) {
+	db := database.Open()
+	user := models.User{}
+	db.Where("email = ?", email).First(&user)
+	if user.ID != "" {
+		return user, errors.New("You have account.")
+	}
+	return nil, nil
+}
+
+func ConnectSocialWithAccount(social, socialid, userid string) (interface{}, error) {
+	db := database.Open()
+	user := models.User{}
+	column := social + "_id"
+	if err := db.Where("id = ?", userid).First(&user).Update(column, socialid).Error; err != nil {
+		return nil, err
 	}
 	return user, nil
 }
