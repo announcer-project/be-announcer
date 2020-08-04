@@ -4,12 +4,9 @@ import (
 	"be_nms/database"
 	"be_nms/models"
 	"be_nms/models/modelsNews"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -88,29 +85,29 @@ func CreateNews(c echo.Context) (interface{}, error) {
 }
 
 func UploadImages(images []string, newsid string, system models.System, news *modelsNews.News) error {
-	db := database.Open()
-	defer db.Close()
-	for i, image := range images {
-		checkbase64 := string([]rune(image)[16:22])
-		file := ""
-		if checkbase64 == "base64" {
-			file = string([]rune(image)[23:])
-		} else {
-			file = string([]rune(image)[22:])
-		}
-		dec, err := base64.StdEncoding.DecodeString(file)
-		if err != nil {
-			panic(err)
-		}
-		imagename := system.SystemName + "-" + fmt.Sprint(system.ID) + "-" + newsid + "-" + strconv.Itoa(i) + `.jpg`
-		err = CreateFile(dec, imagename)
-		if err != nil {
-			return err
-		}
-		img := modelsNews.Image{ImageName: imagename}
-		news.AddImage(img)
-		os.Remove(imagename)
-	}
+	// db := database.Open()
+	// defer db.Close()
+	// for i, image := range images {
+	// 	checkbase64 := string([]rune(image)[16:22])
+	// 	file := ""
+	// 	if checkbase64 == "base64" {
+	// 		file = string([]rune(image)[23:])
+	// 	} else {
+	// 		file = string([]rune(image)[22:])
+	// 	}
+	// 	dec, err := base64.StdEncoding.DecodeString(file)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	imagename := system.SystemName + "-" + fmt.Sprint(system.ID) + "-" + newsid + "-" + strconv.Itoa(i) + `.jpg`
+	// 	err = CreateFile(dec, imagename)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	img := modelsNews.Image{ImageName: imagename}
+	// 	news.AddImage(img)
+	// 	os.Remove(imagename)
+	// }
 	return nil
 }
 
