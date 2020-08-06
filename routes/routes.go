@@ -15,7 +15,7 @@ func Init() *echo.Echo {
 	}
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Welcome to News Management System")
+		return c.String(http.StatusOK, "Welcome to Announcer")
 	})
 	//Account
 	e.GET("/login", handlers.Login)
