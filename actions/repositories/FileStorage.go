@@ -15,10 +15,10 @@ import (
 
 func ConnectFileStorage() *session.Session {
 	session, err := session.NewSession(&aws.Config{
-		Region: aws.String("ap-southeast-1"),
+		Region: aws.String(getEnv("STORAGE_REGION", "")),
 		Credentials: credentials.NewStaticCredentials(
-			"AKIASCHC264LQFS6QQ2A",                     // id
-			"q3DNPz3+BMf9qxy34gvhS5NgPgCvPzRjH+r12wN0", // secret
+			getEnv("STORAGE_ID", ""),     // id
+			getEnv("STORAGE_SECRET", ""), // secret
 			"",
 		),
 	})
