@@ -7,7 +7,7 @@ import (
 type Member struct {
 	gorm.Model
 	UserID   string
-	SystemID uint
+	SystemID string
 	RoleID   uint
 
 	MemberGroup []MemberGroup `gorm:"foreignkey:MemberID"`

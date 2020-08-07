@@ -8,7 +8,7 @@ type TargetGroup struct {
 	gorm.Model
 	TargetGroupName string
 	NumberOfMembers int
-	SystemID        uint
+	SystemID        string
 
 	MemberGroup []MemberGroup `gorm:"foreignkey:TargetGroupID"`
 	// News     []modelsNews.News     `gorm:"foreignkey:SystemID"`

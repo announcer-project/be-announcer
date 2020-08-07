@@ -11,7 +11,7 @@ type News struct {
 	Title      string
 	Body       string `sql:"type:text;"`
 	ExpireDate time.Time
-	SystemID   uint
+	SystemID   string
 	AuthorID   uint
 	Status     string //Draft or Publish
 

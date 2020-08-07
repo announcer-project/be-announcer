@@ -3,12 +3,16 @@ package models
 import (
 	"log"
 	"math/rand"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
 
 type User struct {
 	ID         string `gorm:"primary_key"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	DeletedAt  *time.Time
 	FName      string
 	LName      string
 	Email      string `gorm:"unique"`

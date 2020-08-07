@@ -7,11 +7,11 @@ import (
 type NewsType struct {
 	gorm.Model
 	NewsTypeName string
-	SystemID     uint
+	SystemID     string
 
 	TypeOfNews []TypeOfNews `gorm:"foreignkey:NewsTypeID"`
 }
 
 func (NewsType) TableName() string {
-	return "NewsTypes"
+	return "newstypes"
 }

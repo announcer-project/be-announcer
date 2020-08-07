@@ -8,14 +8,17 @@ import (
 
 type LineOA struct {
 	gorm.Model
-	ChannelName   string
 	ChannelID     string
 	ChannelSecret string
-	SystemID      uint
+	SystemID      string
 
 	RichMenu []modelsLineAPI.RichMenu `gorm:"foreignkey:LineOAID"`
 }
 
 func (LineOA) TableName() string {
-	return "lineoa"
+	return "lineoas"
+}
+
+func (lineoa *LineOA) AddRichMenu(richmenu modelsLineAPI.RichMenu) {
+	lineoa.RichMenu = append(lineoa.RichMenu, richmenu)
 }

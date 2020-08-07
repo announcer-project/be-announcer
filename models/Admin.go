@@ -9,7 +9,7 @@ import (
 type Admin struct {
 	gorm.Model
 	UserID   string
-	SystemID uint
+	SystemID string
 	Position string
 
 	News         []modelsNews.News         `gorm:"foreignkey:AuthorID"`
