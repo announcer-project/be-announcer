@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"unicode/utf8"
 
 	strip "github.com/grokify/html-strip-tags-go"
@@ -26,39 +27,37 @@ type RichMenuID struct {
 	Richmenuid string `json:"richMenuId"`
 }
 
-func CreateRichmenu(channelid, channeltoken, richname string, richMenu linebot.RichMenu) (interface{}, error) {
-	bot, err := linebot.New(channelid, channeltoken)
+func CreateRichmenu(channelid, channelaccesstoken, richname string, richMenu linebot.RichMenu) (interface{}, error) {
+	bot, err := linebot.New(channelid, channelaccesstoken)
 	if err != nil {
 		return nil, err
 	}
-	log.Print(richMenu)
 	res, err := bot.CreateRichMenu(richMenu).Do()
 	if err != nil {
-		log.Print(err)
 		return nil, err
 	}
 	log.Print(res.RichMenuID)
 	return res.RichMenuID, nil
 }
 
-func SetImageToRichMenu(richmenu, channelid, channeltoken, image string) error {
-	// bot, err := linebot.New(channelid, channeltoken)
-	// if err != nil {
-	// 	return err
-	// }
-	// imagePath, err := GetFile(image)
-	// if err != nil {
-	// 	return err
-	// }
-	// if _, err := bot.UploadRichMenuImage(richmenu, imagePath).Do(); err != nil {
-	// 	return err
-	// }
-	// os.Remove(imagePath)
+func SetImageToRichMenu(richmenu, channelid, channelaccesstoken, image string) error {
+	bot, err := linebot.New(channelid, channelaccesstoken)
+	if err != nil {
+		return err
+	}
+	imagePath, err := GetFile("/richmenu", image)
+	if err != nil {
+		return err
+	}
+	if _, err := bot.UploadRichMenuImage(richmenu, imagePath).Do(); err != nil {
+		return err
+	}
+	os.Remove(imagePath)
 	return nil
 }
 
-func SetDefaultRichMenu(richmenuid, channelid, channeltoken string) error {
-	bot, err := linebot.New(channelid, channeltoken)
+func SetDefaultRichMenu(richmenuid, channelid, channelaccesstoken string) error {
+	bot, err := linebot.New(channelid, channelaccesstoken)
 	if err != nil {
 		return err
 	}
@@ -67,8 +66,8 @@ func SetDefaultRichMenu(richmenuid, channelid, channeltoken string) error {
 	}
 	return nil
 }
-func SetAfterRegisterRichMenu(richmenuid, channelid, channeltoken, lineuserid string) error {
-	bot, err := linebot.New(channelid, channeltoken)
+func SetAfterRegisterRichMenu(richmenuid, channelid, channelaccesstoken, lineuserid string) error {
+	bot, err := linebot.New(channelid, channelaccesstoken)
 	if err != nil {
 		return err
 	}
