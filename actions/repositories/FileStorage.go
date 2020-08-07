@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
@@ -60,7 +61,7 @@ func CreateFile(sess *session.Session, imageByte []byte, fileName, pathStorage s
 	log.Print("path", path)
 	// Upload the file to S3.
 	result, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String("announcer-project"),
+		Bucket: aws.String(getEnv("STORAGE_NAME", "")),
 		Key:    aws.String(path),
 		Body:   file,
 		ACL:    aws.String("public-read"),
@@ -78,29 +79,27 @@ func CreateFile(sess *session.Session, imageByte []byte, fileName, pathStorage s
 	return nil
 }
 
-// func GetFile(fileName string) (string, error) {
-// 	containerURL, ctx := ConnectFileStorage()
+func GetFile(path, fileName string) (string, error) {
+	sess := ConnectFileStorage()
+	downloader := s3manager.NewDownloader(sess)
+	file, err := os.Create(fileName)
+	if err != nil {
+		log.Print("create file error")
+		return "", err
+	}
+	defer file.Close()
+	pathfile := path + "/" + fileName
+	numBytes, err := downloader.Download(file,
+		&s3.GetObjectInput{
+			Bucket: aws.String(getEnv("STORAGE_NAME", "")),
+			Key:    aws.String(pathfile),
+		})
+	if err != nil {
+		log.Print("dowload file error")
+		return "", err
+	}
 
-// 	blobURL := containerURL.NewBlobURL(fileName)
-// 	downloadResponse, err := blobURL.Download(ctx, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	// NOTE: automatically retries are performed if the connection fails
-// 	bodyStream := downloadResponse.Body(azblob.RetryReaderOptions{MaxRetryRequests: 20})
-// 	// read the body into a buffer
-// 	downloadedData := bytes.Buffer{}
-// 	_, err = downloadedData.ReadFrom(bodyStream)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	// The downloaded blob data is in downloadData's buffer. :Let's print it
-// 	// fmt.Printf("Downloaded the blob: " + downloadedData.String())
-// 	// fmt.Printf("Downloaded the blob: ", downloadedData.Bytes())
-// 	// f, err := os.Create("")
-// 	err = ioutil.WriteFile(fileName, downloadedData.Bytes(), 0700)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return fileName, nil
-// }
+	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
+
+	return fileName, nil
+}
