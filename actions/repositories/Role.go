@@ -22,7 +22,7 @@ func CreateRole(c echo.Context) (interface{}, error) {
 	}
 	system := models.System{}
 	db.Where("id = ?", c.FormValue("systemid")).Find(&system)
-	if system.ID == 0 {
+	if system.ID == "" {
 		return nil, errors.New("Not have system.")
 	}
 	role := models.Role{RoleName: c.FormValue("rolename"), SystemID: system.ID}
@@ -40,7 +40,7 @@ func GetAllRole(c echo.Context) (interface{}, error) {
 	defer db.Close()
 	system := models.System{}
 	db.Where("id = ? AND system_name = ?", c.QueryParam("systemid"), c.QueryParam("systemname")).Find(&system)
-	if system.ID == 0 {
+	if system.ID == "" {
 		return nil, errors.New("Not have this system.")
 	}
 	roleuser := []models.Role{}

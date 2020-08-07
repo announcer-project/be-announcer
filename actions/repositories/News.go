@@ -42,7 +42,7 @@ func CreateNews(c echo.Context) (interface{}, error) {
 	defer db.Close()
 	system := models.System{}
 	db.Where("id = ?", data.SystemID).First(&system)
-	if system.ID == 0 {
+	if system.ID == "" {
 		return nil, errors.New("Have not this system.")
 	}
 	admin := models.Admin{}
@@ -179,7 +179,7 @@ func CreateNewsType(c echo.Context) (interface{}, error) {
 	}
 	system := models.System{}
 	db.Where("id = ?", c.FormValue("systemid")).Find(&system)
-	if system.ID == 0 {
+	if system.ID == "" {
 		return nil, errors.New("Not have system.")
 	}
 	newsType := modelsNews.NewsType{NewsTypeName: c.FormValue("newstypename"), SystemID: system.ID}
@@ -195,7 +195,7 @@ func GetAllNewsType(c echo.Context) (interface{}, error) {
 	defer db.Close()
 	system := models.System{}
 	db.Where("id = ? AND system_name = ?", c.QueryParam("systemid"), c.QueryParam("systemname")).Find(&system)
-	if system.ID == 0 {
+	if system.ID == "" {
 		return nil, errors.New("Not have this system.")
 	}
 	newsTypes := []modelsNews.NewsType{}
