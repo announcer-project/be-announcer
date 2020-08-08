@@ -193,12 +193,12 @@ func CreateNewsType(c echo.Context) (interface{}, error) {
 func GetAllNewsType(c echo.Context) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
-	system := models.System{}
-	db.Where("id = ? AND system_name = ?", c.QueryParam("systemid"), c.QueryParam("systemname")).Find(&system)
-	if system.ID == "" {
-		return nil, errors.New("Not have this system.")
-	}
 	newsTypes := []modelsNews.NewsType{}
 	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&newsTypes)
+	typeofnews := []modelsNews.TypeOfNews{}
+	for i, newstype := range newsTypes {
+		db.Where("news_type_id = ?", newstype.ID).Find(&typeofnews)
+		newsTypes[i].NumberNews = len(typeofnews)
+	}
 	return newsTypes, nil
 }
