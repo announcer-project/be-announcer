@@ -9,6 +9,7 @@ import (
 type Role struct {
 	gorm.Model
 	RoleName string
+	Require  bool
 	SystemID string
 
 	Member []modelsMember.Member `gorm:"foreignkey:RoleID"`

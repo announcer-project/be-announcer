@@ -52,12 +52,16 @@ func GetSystemByID(c echo.Context, id string) (interface{}, error) {
 }
 
 type SystemJson struct {
-	Systemname string
-	NewsTypes  []string
-	LineOA     struct {
+	SystemProfile string
+	Systemname    string
+	NewsTypes     []string
+	LineOA        struct {
 		ChannelID          string
 		ChannelAccessToken string
-		RoleUsers          []string
+		RoleUsers          []struct {
+			RoleName string
+			Require  bool
+		}
 	}
 }
 
@@ -90,9 +94,14 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		tx.Rollback()
 		return nil, errors.New("Create Fail.")
 	}
+	imageByte := Base64toByte(systemReq.SystemProfile)
+	sess := ConnectFileStorage()
+	if err := CreateFile(sess, imageByte, system.ID+".jpg", "/systems"); err != nil {
+		tx.Rollback()
+		return nil, errors.New("Upload profile system fail.")
+	}
 	log.Print("system Req", systemReq)
 	if systemReq.LineOA.ChannelID != "" {
-
 		richMenuPreRegister := linebot.RichMenu{
 			Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
 			Selected:    true,
@@ -183,7 +192,7 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 			return nil, err
 		}
 		for _, role := range systemReq.LineOA.RoleUsers {
-			system.AddRole(models.Role{RoleName: role})
+			system.AddRole(models.Role{RoleName: role.RoleName, Require: role.Require})
 		}
 		lineoa := models.LineOA{
 			ChannelID:     systemReq.LineOA.ChannelID,
