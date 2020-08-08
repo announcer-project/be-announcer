@@ -15,8 +15,8 @@ type System struct {
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	DeletedAt  *time.Time
-	SystemName string
-	OwnerID    string
+	SystemName string `json:"system_name"`
+	OwnerID    string `json:"owner_id"`
 
 	Admin       []Admin                    `gorm:"foreignkey:SystemID"`
 	News        []modelsNews.News          `gorm:"foreignkey:SystemID"`
