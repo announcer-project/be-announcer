@@ -22,13 +22,12 @@ func GetAllsystems(c echo.Context) (interface{}, error) {
 	tokens, _ := DecodeJWT(jwt)
 	admins := []models.Admin{}
 	db.Where("user_id = ?", tokens["user_id"]).Find(&admins)
-	systems := []models.System{}
-	for _, admin := range admins {
+	for i, admin := range admins {
 		system := models.System{}
 		db.Where("id = ?", admin.SystemID).First(&system)
-		systems = append(systems, system)
+		admins[i].System = system
 	}
-	return systems, nil
+	return admins, nil
 }
 
 func GetSystemByID(c echo.Context, id string) (interface{}, error) {
