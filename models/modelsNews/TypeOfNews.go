@@ -13,5 +13,5 @@ type TypeOfNews struct {
 }
 
 func (TypeOfNews) TableName() string {
-	return "TypeOfNews"
+	return "typeofnews"
 }

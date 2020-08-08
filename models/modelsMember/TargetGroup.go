@@ -6,8 +6,8 @@ import (
 
 type TargetGroup struct {
 	gorm.Model
-	TargetGroupName string
-	NumberOfMembers int
+	TargetGroupName string `json:"targetgroup_name"`
+	NumberOfMembers int    `json:"number_members"`
 	SystemID        string
 
 	MemberGroup []MemberGroup `gorm:"foreignkey:TargetGroupID"`
@@ -16,5 +16,5 @@ type TargetGroup struct {
 }
 
 func (TargetGroup) TableName() string {
-	return "TargetGroup"
+	return "targetgroups"
 }

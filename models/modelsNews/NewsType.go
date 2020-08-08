@@ -6,8 +6,9 @@ import (
 
 type NewsType struct {
 	gorm.Model
-	NewsTypeName string
+	NewsTypeName string `json:"newstype_name"`
 	SystemID     string
+	NumberNews   int `gorm:"-" json:"number_news"`
 
 	TypeOfNews []TypeOfNews `gorm:"foreignkey:NewsTypeID"`
 }
