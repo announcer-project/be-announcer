@@ -3,8 +3,10 @@ package repositories
 import (
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -102,4 +104,26 @@ func GetFile(path, fileName string) (string, error) {
 	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
 
 	return fileName, nil
+}
+
+func DownloadFile(URL, fileName string) error {
+	//Get the response bytes from the url
+	response, err := http.Get(URL)
+	if err != nil {
+	}
+	defer response.Body.Close()
+
+	//Create a empty file
+	file, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	//Write the bytes to the fiel
+	_, err = io.Copy(file, response.Body)
+	if err != nil {
+		return err
+	}
+	return nil
 }

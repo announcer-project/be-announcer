@@ -40,6 +40,7 @@ func ConnectSocialWithAccount(c echo.Context) error {
 	social := c.FormValue("social")
 	socialID := c.FormValue("socialid")
 	userID := c.FormValue("userid")
+	log.Print("connect ", social, socialID, userID)
 	user, err := repositories.ConnectSocialWithAccount(social, socialID, userID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)

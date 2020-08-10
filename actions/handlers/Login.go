@@ -3,7 +3,7 @@ package handlers
 import (
 	"be_nms/actions/repositories"
 	"be_nms/models"
-	"errors"
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -11,19 +11,23 @@ import (
 
 func Login(c echo.Context) error {
 	social := c.Request().Header.Get("Social")
-	userID := ""
-	err := errors.New("error")
-	if social == "line" {
-		userID, err = repositories.GetUserIDLine(c)
-		if err != nil {
-			return c.JSON(400, err)
-		}
-	} else if social == "facebook" {
-		userID = c.Request().Header.Get("UserID")
-	}
-	user, err := repositories.GetUserBySocialId(userID, social)
+	socialID := c.Request().Header.Get("SocialID")
+	email := c.Request().Header.Get("Email")
+	pictureUrl := c.Request().Header.Get("PictureUrl")
+	log.Print(social, socialID, email, pictureUrl)
+	// userID := ""
+	// err := errors.New("error")
+	// if social == "line" {
+	// 	userID, err = repositories.GetUserIDLine(c)
+	// 	if err != nil {
+	// 		return c.JSON(400, err)
+	// 	}
+	// } else if social == "facebook" {
+	// 	userID = c.Request().Header.Get("UserID")
+	// }
+	user, err := repositories.GetUserBySocialId(socialID, social)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, userID)
+		return c.JSON(http.StatusBadRequest, socialID)
 	}
 	jwt := repositories.EncodeJWT(user.(models.User))
 	return c.JSON(http.StatusOK, jwt)
