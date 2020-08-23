@@ -51,6 +51,17 @@ func Register(c echo.Context) (interface{}, error) {
 	return user, nil
 }
 
+func CheckUserByLineID(id string) bool {
+	db := database.Open()
+	defer db.Close()
+	user := models.User{}
+	db.Where("line_id = ?", id).First(&user)
+	if user.ID != "" {
+		return true
+	}
+	return false
+}
+
 func CheckUserByEmail(email string) (interface{}, error) {
 	db := database.Open()
 	user := models.User{}

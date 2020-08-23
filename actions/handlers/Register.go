@@ -25,6 +25,15 @@ func SendOTP(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Send OTP Success!")
 }
 
+func CheckUserByLineID(c echo.Context) error {
+	lineid := c.FormValue("lineid")
+	haveuser := repositories.CheckUserByLineID(lineid)
+	if haveuser {
+		return c.JSON(http.StatusOK, haveuser)
+	}
+	return c.JSON(http.StatusOK, haveuser)
+}
+
 func CheckUserByEmail(c echo.Context) error {
 	email := c.FormValue("email")
 	user, err := repositories.CheckUserByEmail(email)

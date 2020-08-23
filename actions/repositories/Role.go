@@ -38,11 +38,6 @@ func CreateRole(c echo.Context) (interface{}, error) {
 func GetAllRole(c echo.Context) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
-	system := models.System{}
-	db.Where("id = ? AND system_name = ?", c.QueryParam("systemid"), c.QueryParam("systemname")).Find(&system)
-	if system.ID == "" {
-		return nil, errors.New("Not have this system.")
-	}
 	roleuser := []models.Role{}
 	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&roleuser)
 	return roleuser, nil

@@ -57,7 +57,7 @@ func CreateNewsType(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Create Success.")
 }
 func GetAlNewsType(c echo.Context) error {
-	newsTypes, err := repositories.GetAllNewsType(c)
+	newsTypes, err := repositories.GetAllNewsType(c, false)
 	if err != nil {
 		return err
 	}

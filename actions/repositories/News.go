@@ -190,11 +190,14 @@ func CreateNewsType(c echo.Context) (interface{}, error) {
 	return newsType, nil
 }
 
-func GetAllNewsType(c echo.Context) (interface{}, error) {
+func GetAllNewsType(c echo.Context, lineregister bool) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	newsTypes := []modelsNews.NewsType{}
 	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&newsTypes)
+	if lineregister {
+		return newsTypes, nil
+	}
 	typeofnews := []modelsNews.TypeOfNews{}
 	for i, newstype := range newsTypes {
 		db.Where("news_type_id = ?", newstype.ID).Find(&typeofnews)

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"be_nms/actions/repositories"
+	"be_nms/models"
 	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
 	"net/http"
@@ -20,7 +21,7 @@ func GetAllAboutSystem(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	newstypes, err := repositories.GetAllNewsType(c)
+	newstypes, err := repositories.GetAllNewsType(c, false)
 	if err != nil {
 		return err
 	}
@@ -29,6 +30,24 @@ func GetAllAboutSystem(c echo.Context) error {
 		return err
 	}
 	aboutSystem := About{News: news.([]modelsNews.News), NewsTypes: newstypes.([]modelsNews.NewsType), TatgetGroups: targetgroups.([]modelsMember.TargetGroup)}
+	return c.JSON(http.StatusOK, aboutSystem)
+}
+
+type AboutForLineRegister struct {
+	NewsTypes []modelsNews.NewsType `json:"newstypes"`
+	RolesUser []models.Role         `json:"roles"`
+}
+
+func GetAboutSystemForLineRegister(c echo.Context) error {
+	newstypes, err := repositories.GetAllNewsType(c, true)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+	roles, err := repositories.GetAllRole(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+	aboutSystem := AboutForLineRegister{NewsTypes: newstypes.([]modelsNews.NewsType), RolesUser: roles.([]models.Role)}
 	return c.JSON(http.StatusOK, aboutSystem)
 }
 

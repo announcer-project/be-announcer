@@ -95,7 +95,7 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 	}
 	imageByte := Base64toByte(systemReq.SystemProfile)
 	sess := ConnectFileStorage()
-	if err := CreateFile(sess, imageByte, system.ID+".jpg", "/systems"); err != nil {
+	if err := CreateFile(sess, imageByte, system.ID+".png", "/systems"); err != nil {
 		tx.Rollback()
 		return nil, errors.New("Upload profile system fail.")
 	}

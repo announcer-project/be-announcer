@@ -22,6 +22,7 @@ func Init() *echo.Echo {
 	e.POST("/register", handlers.Register)
 	e.POST("/register/sendotp", handlers.SendOTP)
 	e.POST("/register/checkuser", handlers.CheckUserByEmail)
+	e.POST("/register/checkuserbylineid", handlers.CheckUserByLineID)
 	e.POST("/register/connectsocial", handlers.ConnectSocialWithAccount)
 	//System
 	e.GET("/system/all", handlers.GetAllSystems)
@@ -46,6 +47,7 @@ func Init() *echo.Echo {
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	//Liff
 	e.POST("/line/register", handlers.CreateMember)
+	e.GET("/line/register/aboutsystem", handlers.GetAboutSystemForLineRegister)
 
 	//Line API Richmenu
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
