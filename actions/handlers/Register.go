@@ -10,7 +10,7 @@ import (
 )
 
 func Register(c echo.Context) error {
-	user, err := repositories.Register(c)
+	user, err := repositories.Register(c.FormValue("email"), c.FormValue("fname"), c.FormValue("lname"), c.FormValue("line"), c.FormValue("facebook"), c.FormValue("google"), c.FormValue("imagesocial"), c.FormValue("imageUrl"), c.FormValue("imageProfile"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}

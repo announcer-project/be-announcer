@@ -1,6 +1,8 @@
 package modelsNews
 
 import (
+	"be_nms/models/modelsMember"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -10,7 +12,8 @@ type NewsType struct {
 	SystemID     string
 	NumberNews   int `gorm:"-" json:"number_news"`
 
-	TypeOfNews []TypeOfNews `gorm:"foreignkey:NewsTypeID"`
+	TypeOfNews       []TypeOfNews                    `gorm:"foreignkey:NewsTypeID"`
+	MemberInterested []modelsMember.MemberInterested `gorm:"foreignkey:NewsTypeID"`
 }
 
 func (NewsType) TableName() string {

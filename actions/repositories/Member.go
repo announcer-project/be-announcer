@@ -1,13 +1,19 @@
 package repositories
 
 import (
+	"be_nms/database"
+	"be_nms/models"
+	"be_nms/models/modelsLineAPI"
+	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
+	"errors"
 	"log"
 
 	"github.com/labstack/echo/v4"
 )
 
 type User struct {
+	ImageUrl       string
 	Fname          string
 	Lname          string
 	RoleID         uint
@@ -23,50 +29,63 @@ func RegisterGetNews(c echo.Context) (interface{}, error) {
 		return nil, err
 	}
 	log.Print("Data: ", data)
-	// db := database.Open()
-	// defer db.Close()
-
-	// tx := db.Begin()
-
-	// user := models.User{}
-	// db.Where("email = ? OR line_id = ?", data.Email, data.Line).First(&user)
-	// if user.ID == "" {
-	// 	user.CreateUser(data.Fname, data.Lname, data.Email, data.Line, "", "")
-	// 	tx.Create(&user)
-	// }
-	// if user.ID == "" {
-	// 	tx.Rollback()
-	// 	return nil, errors.New("Register fail.")
-	// }
-	// system := models.System{}
-	// db.Where("id = ?", data.SystemID).Find(&system)
-	// role := models.Role{}
-	// db.Where("id = ?", data.RoleID).Find(&role)
-	// member := modelsMember.Member{UserID: user.ID, SystemID: system.ID, RoleID: role.ID}
-	// tx.Create(&member)
-	// if member.ID == 0 {
-	// 	tx.Rollback()
-	// 	return nil, errors.New("Fail.")
-	// }
-	// targetgroup := modelsMember.TargetGroup{}
-	// db.Where("target_group_name = ?", role.RoleName).Find(&targetgroup)
-	// if targetgroup.ID == 0 {
-	// 	return nil, errors.New("Add to target group error.")
-	// }
-	// membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
-	// tx.Create(&membergroup)
-	// if membergroup.ID == 0 {
-	// 	return nil, errors.New("Add member to group error.")
-	// }
-	// targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
-	// tx.Save(&targetgroup)
-	// tx.Commit()
-	// lineoa := []models.LineOA{}
-	// db.Where("system_id = ?", system.ID).Find(&lineoa)
-	// for _, line := range lineoa {
-	// 	richmenu := modelsLineAPI.RichMenu{}
-	// 	db.Where("line_oa_id = ? AND status = ?", line.ID, "afterregister").Find(&richmenu)
-	// 	SetAfterRegisterRichMenu(richmenu.RichID, line.ChannelID, line.ChannelSecret, user.LineID)
-	// }
-	return nil, nil
+	db := database.Open()
+	defer db.Close()
+	user := models.User{}
+	system := models.System{}
+	db.Where("id = ?", data.SystemID).First(&system)
+	if system.ID == "" {
+		return nil, errors.New("not found system")
+	}
+	lineoa := models.LineOA{}
+	db.Where("system_id = ?", system.ID).First(&lineoa)
+	if lineoa.ID == 0 {
+		return nil, errors.New("not found line oa")
+	}
+	richmenu := modelsLineAPI.RichMenu{}
+	db.Where("line_oa_id = ? and status = ?", lineoa.ID, "afterregister").First(&richmenu)
+	if richmenu.ID == 0 {
+		return nil, errors.New("not found richmenu afterregister")
+	}
+	if data.Fname == "" && data.Lname == "" {
+		log.Print("user have account")
+		db.Where("line_id = ?", data.Line).First(&user)
+		log.Print("user", user)
+		tx := db.Begin()
+		member := modelsMember.Member{UserID: user.ID, SystemID: data.SystemID, RoleID: data.RoleID}
+		for _, newstype := range data.NewsInterested {
+			memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
+			member.AddNewsTypeInterested(memberInterrested)
+		}
+		tx.Create(&member)
+		if member.ID == 0 {
+			return nil, errors.New("Create member fail")
+		}
+		if err := SetAfterRegisterRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID); err != nil {
+			return nil, err
+		}
+		tx.Commit()
+		return member, nil
+	} else {
+		log.Print("user not have account")
+		user, err := Register(data.Email, data.Fname, data.Lname, data.Line, "", "", "true", data.ImageUrl, "")
+		if err != nil {
+			return nil, errors.New("Register fail")
+		}
+		tx := db.Begin()
+		member := modelsMember.Member{UserID: user.(models.User).ID, SystemID: data.SystemID, RoleID: data.RoleID}
+		for _, newstype := range data.NewsInterested {
+			memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
+			member.AddNewsTypeInterested(memberInterrested)
+		}
+		tx.Create(&member)
+		if member.ID == 0 {
+			return nil, errors.New("Create member fail")
+		}
+		if err := SetAfterRegisterRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.(models.User).LineID); err != nil {
+			return nil, err
+		}
+		tx.Commit()
+		return member, nil
+	}
 }

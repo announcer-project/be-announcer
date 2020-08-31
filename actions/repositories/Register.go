@@ -5,27 +5,25 @@ import (
 	"be_nms/models"
 	"errors"
 	"io/ioutil"
-
-	"github.com/labstack/echo/v4"
 )
 
-func Register(c echo.Context) (interface{}, error) {
+func Register(email, fname, lname, line, facebook, google, imagesocial, imageUrl, imageProfile string) (interface{}, error) {
 	db := database.Open()
 	user := models.User{}
-	db.Where("email = ?", c.FormValue("email")).First(&user)
+	db.Where("email = ?", email).First(&user)
 	if user.ID != "" {
 		return user, errors.New("You have account.")
 	}
 	tx := db.Begin()
-	user.CreateUser(c.FormValue("fname"), c.FormValue("lname"), c.FormValue("email"), c.FormValue("line"), c.FormValue("facebook"), c.FormValue("google"))
+	user.CreateUser(fname, lname, email, line, facebook, google)
 	if err := tx.Create(&user).Error; err != nil {
 		tx.Rollback()
 		return nil, errors.New("Register fail.")
 	}
 	sess := ConnectFileStorage()
-	if c.FormValue("imagesocial") == "true" {
+	if imagesocial == "true" {
 		fileName := user.ID + ".jpg"
-		URL := c.FormValue("imageUrl")
+		URL := imageUrl
 		err := DownloadFile(URL, fileName)
 		if err != nil {
 			tx.Rollback()
@@ -41,7 +39,7 @@ func Register(c echo.Context) (interface{}, error) {
 			return nil, errors.New("Register fail.")
 		}
 	} else {
-		imageByte := Base64toByte(c.FormValue("imageprofile"))
+		imageByte := Base64toByte(imageProfile)
 		if err := CreateFile(sess, imageByte, user.ID+".jpg", "/profile"); err != nil {
 			tx.Rollback()
 			return nil, errors.New("Register fail.")
