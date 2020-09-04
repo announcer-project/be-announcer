@@ -41,7 +41,10 @@ func BroadcastToSelected(
 		}
 	}
 	if CheckTargetGroups {
-
+		line_id := GetLineIDMemberTargetGroup(targetgroups)
+		for _, lineid := range line_id {
+			line_id_hash[lineid] = lineid
+		}
 	}
 	if CheckUsers {
 		for _, user := range users {
@@ -65,6 +68,27 @@ func GetLineIDMemberInterested(newstypes []modelsNews.NewsType) []string {
 		for _, member_interested := range members_interested {
 			member := modelsMember.Member{}
 			db.Where("id = ?", member_interested.MemberID).First(&member)
+			user := models.User{}
+			db.Where("id = ?", member.UserID).First(&user)
+			line_id_hash[user.LineID] = user.LineID
+		}
+	}
+	line_id := []string{}
+	for key, _ := range line_id_hash {
+		line_id = append(line_id, key)
+	}
+	log.Print(line_id)
+	return line_id
+}
+func GetLineIDMemberTargetGroup(targetgroups []modelsMember.TargetGroup) []string {
+	db := database.Open()
+	line_id_hash := make(map[string]string)
+	for _, targetgroup := range targetgroups {
+		members_targetgroup := []modelsMember.MemberGroup{}
+		db.Where("target_group_id = ?", targetgroup.ID).Find(&members_targetgroup)
+		for _, member_targetgroup := range members_targetgroup {
+			member := modelsMember.Member{}
+			db.Where("id = ?", member_targetgroup.MemberID).First(&member)
 			user := models.User{}
 			db.Where("id = ?", member.UserID).First(&user)
 			line_id_hash[user.LineID] = user.LineID
