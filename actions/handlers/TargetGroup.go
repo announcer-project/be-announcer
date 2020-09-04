@@ -15,7 +15,7 @@ func CreateTargetGroup(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Create success.")
 }
 func GetAllTargetGroup(c echo.Context) error {
-	targetGroups, err := repositories.GetAllTargetGroup(c)
+	targetGroups, err := repositories.GetAllTargetGroup(c.QueryParam("systemid"))
 	if err != nil {
 		return err
 	}

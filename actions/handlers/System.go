@@ -17,15 +17,18 @@ type About struct {
 }
 
 func GetAllAboutSystem(c echo.Context) error {
-	news, err := repositories.GetAllNews(c, "publish")
+	authorization := c.Request().Header.Get("Authorization")
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	news, err := repositories.GetAllNews(tokens["user_id"].(string), c.QueryParam("systemid"), "publish")
 	if err != nil {
 		return err
 	}
-	newstypes, err := repositories.GetAllNewsType(c, false)
+	newstypes, err := repositories.GetAllNewsType(c.QueryParam("systemid"), true)
 	if err != nil {
 		return err
 	}
-	targetgroups, err := repositories.GetAllTargetGroup(c)
+	targetgroups, err := repositories.GetAllTargetGroup(c.QueryParam("systemid"))
 	if err != nil {
 		return err
 	}
@@ -39,7 +42,7 @@ type AboutForLineRegister struct {
 }
 
 func GetAboutSystemForLineRegister(c echo.Context) error {
-	newstypes, err := repositories.GetAllNewsType(c, true)
+	newstypes, err := repositories.GetAllNewsType(c.QueryParam("systemid"), false)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}

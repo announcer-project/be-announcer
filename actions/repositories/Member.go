@@ -89,3 +89,10 @@ func RegisterGetNews(c echo.Context) (interface{}, error) {
 		return member, nil
 	}
 }
+
+func GetAllMember(systemid string) (interface{}, error) {
+	members := []modelsMember.Member{}
+	db := database.Open()
+	db.Where("system_id = ?", systemid).Find(&members)
+	return members, nil
+}

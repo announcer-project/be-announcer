@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"unicode/utf8"
@@ -75,6 +76,54 @@ func SetAfterRegisterRichMenu(richmenuid, channelid, channelaccesstoken, lineuse
 		return err
 	}
 	return nil
+}
+
+func CreateNewsCardLine(AltText, CoverUrl, Title, Body, NewsUrl string) linebot.TemplateMessage {
+	if utf8.RuneCountInString(Title) > 37 {
+		Title = string([]rune(Title)[0:37]) + "..."
+	}
+	if utf8.RuneCountInString(Body) > 57 {
+		Body = string([]rune(Body)[0:57]) + "..."
+	}
+	container := linebot.TemplateMessage{
+		AltText: AltText,
+		Template: linebot.NewButtonsTemplate(
+			CoverUrl,
+			Title,
+			Body,
+			linebot.NewURIAction("More Detail", NewsUrl)),
+	}
+	return container
+}
+
+func CreateTextLine(text string) linebot.TextMessage {
+	container := linebot.TextMessage{
+		Text: text,
+	}
+	return container
+}
+
+func CreateImageLine(base64img string) (linebot.ImageMessage, string) {
+	session := ConnectFileStorage()
+	imageByte := Base64toByte(base64img)
+	Filename := "BC-"
+	for i := 0; i < 6; i++ {
+		ranType := rand.Intn(2)
+		switch ranType {
+		case 0:
+			Filename += string(rand.Intn(57-48) + 48)
+		case 1:
+			Filename += string(rand.Intn(90-65) + 65)
+		case 2:
+			Filename += string(rand.Intn(122-97) + 97)
+		}
+	}
+	CreateFile(session, imageByte, Filename+".png", "/broadcast")
+	container := linebot.ImageMessage{
+		OriginalContentURL: "https://announcer-project.s3-ap-southeast-1.amazonaws.com/broadcast/" + Filename + ".png",
+		PreviewImageURL:    "https://announcer-project.s3-ap-southeast-1.amazonaws.com/broadcast/" + Filename + ".png",
+	}
+	return container, Filename + ".png"
 }
 
 // func BroadMessageLine(c echo.Context, news models.News) bool {

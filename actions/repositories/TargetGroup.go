@@ -32,10 +32,10 @@ func CreateTargetGroup(c echo.Context) (interface{}, error) {
 	}
 	return targetGroup, nil
 }
-func GetAllTargetGroup(c echo.Context) (interface{}, error) {
+func GetAllTargetGroup(systemid string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	targetGroups := []modelsMember.TargetGroup{}
-	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&targetGroups)
+	db.Where("system_id = ?", systemid).Find(&targetGroups)
 	return targetGroups, nil
 }

@@ -8,12 +8,12 @@ import (
 
 type News struct {
 	gorm.Model
-	Title      string
-	Body       string `sql:"type:text;"`
-	ExpireDate time.Time
-	SystemID   string
-	AuthorID   uint
-	Status     string //Draft or Publish
+	Title      string    `json:"title"`
+	Body       string    `sql:"type:text;" json:"body"`
+	ExpireDate time.Time `json:"expire_date"`
+	SystemID   string    `json:"system_id"`
+	AuthorID   uint      `json:"authr_id"`
+	Status     string    `json:"status"` //Draft or Publish
 
 	Announcement []Announcement `gorm:"foreignkey:NewsID"`
 	Image        []Image        `gorm:"foreignkey:NewsID"`

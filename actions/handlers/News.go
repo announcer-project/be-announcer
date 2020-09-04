@@ -34,17 +34,26 @@ type AllNewsClassify struct {
 }
 
 func GetAllNewsByClassify(c echo.Context) error {
-	newsDraft, _ := repositories.GetAllNews(c, "draft")
-	newsPublish, _ := repositories.GetAllNews(c, "publish")
+	authorization := c.Request().Header.Get("Authorization")
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	newsDraft, _ := repositories.GetAllNews(tokens["user_id"].(string), c.QueryParam("systemid"), "draft")
+	newsPublish, _ := repositories.GetAllNews(tokens["user_id"].(string), c.QueryParam("systemid"), "publish")
 	allnews := AllNewsClassify{NewsDraft: newsDraft.([]modelsNews.News), NewsPublish: newsPublish.([]modelsNews.News)}
 	return c.JSON(http.StatusOK, allnews)
 }
 func GetAllNewsDraft(c echo.Context) error {
-	news, _ := repositories.GetAllNews(c, "draft")
+	authorization := c.Request().Header.Get("Authorization")
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	news, _ := repositories.GetAllNews(tokens["user_id"].(string), c.QueryParam("systemid"), "draft")
 	return c.JSON(http.StatusOK, news)
 }
 func GetAllNewsPublish(c echo.Context) error {
-	news, _ := repositories.GetAllNews(c, "publish")
+	authorization := c.Request().Header.Get("Authorization")
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	news, _ := repositories.GetAllNews(tokens["user_id"].(string), c.QueryParam("systemid"), "publish")
 	return c.JSON(http.StatusOK, news)
 }
 
@@ -57,7 +66,7 @@ func CreateNewsType(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Create Success.")
 }
 func GetAlNewsType(c echo.Context) error {
-	newsTypes, err := repositories.GetAllNewsType(c, false)
+	newsTypes, err := repositories.GetAllNewsType(c.QueryParam("systemid"), true)
 	if err != nil {
 		return err
 	}

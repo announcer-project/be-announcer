@@ -13,9 +13,9 @@ type User struct {
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	DeletedAt  *time.Time
-	FName      string
-	LName      string
-	Email      string `gorm:"unique"`
+	FName      string `json:"fname"`
+	LName      string `json:"lname"`
+	Email      string `gorm:"unique" json:"email"`
 	LineID     string
 	FacebookID string
 	GoogleID   string

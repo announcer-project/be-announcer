@@ -81,6 +81,28 @@ func CreateFile(sess *session.Session, imageByte []byte, fileName, pathStorage s
 	return nil
 }
 
+func DeleteFile(path, fileName string) error {
+	sess := ConnectFileStorage()
+	svc := s3.New(sess)
+	log.Print("path ", path+"/"+fileName)
+	input := &s3.DeleteObjectsInput{
+		Bucket: aws.String(getEnv("STORAGE_NAME", "")),
+		Delete: &s3.Delete{
+			Objects: []*s3.ObjectIdentifier{
+				{
+					Key: aws.String(path + "/" + fileName),
+				},
+			},
+			Quiet: aws.Bool(false),
+		},
+	}
+	_, err := svc.DeleteObjects(input)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetFile(path, fileName string) (string, error) {
 	sess := ConnectFileStorage()
 	downloader := s3manager.NewDownloader(sess)

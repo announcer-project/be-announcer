@@ -144,16 +144,12 @@ func GetNewsByID(c echo.Context, id string) (interface{}, error) {
 // 	return news, nil
 // }
 
-func GetAllNews(c echo.Context, status string) (interface{}, error) {
-	authorization := c.Request().Header.Get("Authorization")
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := DecodeJWT(jwt)
-	log.Print("test1")
+func GetAllNews(userid, systemid string, status string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	log.Print("test2")
 	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.QueryParam("systemid")).Find(&admin)
+	db.Where("user_id = ? AND system_id = ?", userid, systemid).Find(&admin)
 	log.Print("test3")
 	if admin.ID == 0 {
 		return nil, errors.New("You not admin in this system.")
@@ -161,7 +157,7 @@ func GetAllNews(c echo.Context, status string) (interface{}, error) {
 	log.Print("test4")
 	log.Print(admin)
 	news := []modelsNews.News{}
-	db.Where("system_id = ? AND status = ?", c.FormValue("systemid"), status).Preload("TypeOfNews").Find(&news)
+	db.Where("system_id = ? AND status = ?", systemid, status).Preload("TypeOfNews").Find(&news)
 	return news, nil
 }
 
@@ -190,18 +186,18 @@ func CreateNewsType(c echo.Context) (interface{}, error) {
 	return newsType, nil
 }
 
-func GetAllNewsType(c echo.Context, lineregister bool) (interface{}, error) {
+func GetAllNewsType(systemid string, getnumberofnews bool) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	newsTypes := []modelsNews.NewsType{}
-	db.Where("system_id = ?", c.QueryParam("systemid")).Find(&newsTypes)
-	if lineregister {
+	db.Where("system_id = ?", systemid).Find(&newsTypes)
+	if getnumberofnews {
+		typeofnews := []modelsNews.TypeOfNews{}
+		for i, newstype := range newsTypes {
+			db.Where("news_type_id = ?", newstype.ID).Find(&typeofnews)
+			newsTypes[i].NumberNews = len(typeofnews)
+		}
 		return newsTypes, nil
-	}
-	typeofnews := []modelsNews.TypeOfNews{}
-	for i, newstype := range newsTypes {
-		db.Where("news_type_id = ?", newstype.ID).Find(&typeofnews)
-		newsTypes[i].NumberNews = len(typeofnews)
 	}
 	return newsTypes, nil
 }
