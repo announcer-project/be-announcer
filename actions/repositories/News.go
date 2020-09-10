@@ -3,6 +3,7 @@ package repositories
 import (
 	"be_nms/database"
 	"be_nms/models"
+	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
 	"errors"
 	"fmt"
@@ -18,6 +19,7 @@ type NewsType struct {
 	Selected bool
 }
 type News struct {
+	Cover           string
 	Title           string
 	Body            string
 	Checkexpiredate bool
@@ -127,23 +129,6 @@ func GetNewsByID(c echo.Context, id string) (interface{}, error) {
 	return news, nil
 }
 
-// func GetAllNews(c echo.Context) (interface{}, error) {
-// 	authorization := c.Request().Header.Get("Authorization")
-// 	jwt := string([]rune(authorization)[7:])
-// 	tokens, _ := DecodeJWT(jwt)
-// 	db := database.Open()
-// 	defer db.Close()
-// 	admin := models.Admin{}
-// 	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
-// 	if admin.ID == 0 {
-// 		return nil, errors.New("You not admin in this system.")
-// 	}
-// 	news := []modelsNews.News{}
-// 	db.Where("system_id = ?", c.FormValue("systemid")).Find(&news)
-
-// 	return news, nil
-// }
-
 func GetAllNews(userid, systemid string, status string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
@@ -186,6 +171,21 @@ func CreateNewsType(c echo.Context) (interface{}, error) {
 	return newsType, nil
 }
 
+func DeleteNewsType(userid, systemid string, newstypeid int) error {
+	db := database.Open()
+	defer db.Close()
+	admin := models.Admin{}
+	db.Where("user_id = ? AND system_id = ?", userid, systemid).Find(&admin)
+	if admin.ID == 0 {
+		return errors.New("You not admin in this system.")
+	}
+	newstype := modelsNews.NewsType{}
+	db.Where("id = ?", newstypeid).First(&newstype)
+	db.Where("news_type_id = ?", newstype.ID).Delete(&modelsMember.MemberInterested{})
+	db.Where("news_type_id = ?", newstype.ID).Delete(&modelsNews.TypeOfNews{})
+	db.Delete(&newstype)
+	return nil
+}
 func GetAllNewsType(systemid string, getnumberofnews bool) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()

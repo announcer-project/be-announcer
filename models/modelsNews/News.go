@@ -14,6 +14,8 @@ type News struct {
 	SystemID   string    `json:"system_id"`
 	AuthorID   uint      `json:"authr_id"`
 	Status     string    `json:"status"` //Draft or Publish
+	Send       int       `json:"send"`
+	View       int       `json:"view"`
 
 	Announcement []Announcement `gorm:"foreignkey:NewsID"`
 	Image        []Image        `gorm:"foreignkey:NewsID"`

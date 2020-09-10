@@ -35,6 +35,7 @@ func Init() *echo.Echo {
 	e.POST("/news/create", handlers.CreateNews)
 	e.GET("/news/:id", handlers.GetNewsByID)
 	e.POST("/news/newstype/create", handlers.CreateNewsType)
+	e.POST("/news/newstype/delete", handlers.DeleteNewsType)
 	e.GET("/news/newstype/allnewstype", handlers.GetAlNewsType)
 	e.POST("/announcenews", handlers.AnnounceNews)
 	//TargetGroup

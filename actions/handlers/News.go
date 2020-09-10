@@ -65,12 +65,33 @@ func CreateNewsType(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, "Create Success.")
 }
+
 func GetAlNewsType(c echo.Context) error {
 	newsTypes, err := repositories.GetAllNewsType(c.QueryParam("systemid"), true)
 	if err != nil {
 		return err
 	}
 	return c.JSON(http.StatusOK, newsTypes)
+}
+
+func DeleteNewsType(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	var data struct {
+		Systemid   string
+		Newstypeid int
+	}
+	if err := c.Bind(&data); err != nil {
+		log.Print("error ", err)
+		return err
+	}
+	log.Print(tokens["user_id"])
+	log.Print(data)
+	if err := repositories.DeleteNewsType(tokens["user_id"].(string), data.Systemid, data.Newstypeid); err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, "Test")
 }
 
 //Announce
