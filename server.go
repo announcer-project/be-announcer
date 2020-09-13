@@ -4,8 +4,10 @@ import (
 	"be_nms/database"
 	"be_nms/routes"
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4/middleware"
 )
 
@@ -19,6 +21,9 @@ func getPort() string {
 }
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
 	e := routes.Init()
 	db := database.Open()
 	defer db.Close()

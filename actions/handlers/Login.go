@@ -10,25 +10,30 @@ import (
 )
 
 func Login(c echo.Context) error {
-	social := c.Request().Header.Get("Social")
-	socialID := c.Request().Header.Get("SocialID")
-	email := c.Request().Header.Get("Email")
-	pictureUrl := c.Request().Header.Get("PictureUrl")
-	log.Print(social, socialID, email, pictureUrl)
-	// userID := ""
-	// err := errors.New("error")
-	// if social == "line" {
-	// 	userID, err = repositories.GetUserIDLine(c)
-	// 	if err != nil {
-	// 		return c.JSON(400, err)
-	// 	}
-	// } else if social == "facebook" {
-	// 	userID = c.Request().Header.Get("UserID")
-	// }
-	user, err := repositories.GetUserBySocialId(socialID, social)
+	var data struct {
+		Social   string
+		SocialID string
+	}
+	if err := c.Bind(&data); err != nil {
+		log.Print("error ", err)
+		return err
+	}
+	user, err := repositories.GetUserBySocialId(data.SocialID, data.Social)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, socialID)
+		fail := struct {
+			Message  string `json:"message"`
+			SocialID string `json:"social_id"`
+		}{
+			err.Error(),
+			data.SocialID,
+		}
+		return c.JSON(401, fail)
 	}
 	jwt := repositories.EncodeJWT(user.(models.User))
-	return c.JSON(http.StatusOK, jwt)
+	success := struct {
+		JWT string `json:"jwt"`
+	}{
+		jwt,
+	}
+	return c.JSON(http.StatusOK, success)
 }

@@ -10,12 +10,50 @@ import (
 )
 
 func Register(c echo.Context) error {
-	user, err := repositories.Register(c.FormValue("email"), c.FormValue("fname"), c.FormValue("lname"), c.FormValue("line"), c.FormValue("facebook"), c.FormValue("google"), c.FormValue("imagesocial"), c.FormValue("imageUrl"), c.FormValue("imageProfile"))
+	var data struct {
+		Email        string
+		Fname        string
+		Lname        string
+		Line         string
+		Facebook     string
+		Google       string
+		ImageSocial  bool
+		ImageUrl     string
+		ImageProfile string
+	}
+	if err := c.Bind(&data); err != nil {
+		log.Print("error ", err)
+		return err
+	}
+	user, err := repositories.Register(
+		data.Email,
+		data.Fname,
+		data.Lname,
+		data.Line,
+		data.Facebook,
+		data.Google,
+		data.ImageSocial,
+		data.ImageUrl,
+		data.ImageProfile)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		fail := struct {
+			Message string `json:"message"`
+		}{
+			err.Error(),
+		}
+		if fail.Message == "Register fail." {
+			return c.JSON(500, fail)
+		} else {
+			return c.JSON(400, fail)
+		}
 	}
 	jwt := repositories.EncodeJWT(user.(models.User))
-	return c.JSON(http.StatusOK, jwt)
+	success := struct {
+		JWT string `json:"jwt"`
+	}{
+		jwt,
+	}
+	return c.JSON(http.StatusOK, success)
 }
 
 func SendOTP(c echo.Context) error {

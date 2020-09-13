@@ -68,7 +68,7 @@ func RegisterGetNews(c echo.Context) (interface{}, error) {
 		return member, nil
 	} else {
 		log.Print("user not have account")
-		user, err := Register(data.Email, data.Fname, data.Lname, data.Line, "", "", "true", data.ImageUrl, "")
+		user, err := Register(data.Email, data.Fname, data.Lname, data.Line, "", "", true, data.ImageUrl, "")
 		if err != nil {
 			return nil, errors.New("Register fail")
 		}

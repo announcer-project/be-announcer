@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 
-func Register(email, fname, lname, line, facebook, google, imagesocial, imageUrl, imageProfile string) (interface{}, error) {
+func Register(email, fname, lname, line, facebook, google string, imagesocial bool, imageUrl, imageProfile string) (interface{}, error) {
 	db := database.Open()
 	user := models.User{}
 	db.Where("email = ?", email).First(&user)
@@ -21,7 +21,7 @@ func Register(email, fname, lname, line, facebook, google, imagesocial, imageUrl
 		return nil, errors.New("Register fail.")
 	}
 	sess := ConnectFileStorage()
-	if imagesocial == "true" {
+	if imagesocial == true {
 		fileName := user.ID + ".jpg"
 		URL := imageUrl
 		err := DownloadFile(URL, fileName)
