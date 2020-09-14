@@ -74,8 +74,26 @@ func ConnectSocialWithAccount(social, socialid, userid string) (interface{}, err
 	db := database.Open()
 	user := models.User{}
 	column := social + "_id"
+	db.Where("id = ?", userid).First(&user)
+	switch social {
+	case "facebook":
+		if user.FacebookID != "" {
+			return nil, errors.New("have facebook id.")
+		}
+		break
+	case "line":
+		if user.LineID != "" {
+			return nil, errors.New("have line id.")
+		}
+		break
+	case "google":
+		if user.FacebookID != "" {
+			return nil, errors.New("have google id.")
+		}
+		break
+	}
 	if err := db.Where("id = ?", userid).First(&user).Update(column, socialid).Error; err != nil {
-		return nil, err
+		return nil, errors.New("Update social id fail.")
 	}
 	return user, nil
 }

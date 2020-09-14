@@ -57,41 +57,87 @@ func Register(c echo.Context) error {
 }
 
 func SendOTP(c echo.Context) error {
-	otp := c.FormValue("otp")
-	email := c.FormValue("email")
-	go repositories.SendEmail("OTP", email, otp)
-	return c.JSON(http.StatusOK, "Send OTP Success!")
+	var data struct {
+		OTP   string
+		Email string
+	}
+	if err := c.Bind(&data); err != nil {
+		log.Print("error ", err)
+		return err
+	}
+	go repositories.SendEmail("OTP", data.Email, data.OTP)
+	success := struct {
+		Message string `json:"message"`
+	}{
+		"send otp success.",
+	}
+	return c.JSON(http.StatusOK, success)
 }
 
 func CheckUserByLineID(c echo.Context) error {
-	lineid := c.FormValue("lineid")
-	haveuser := repositories.CheckUserByLineID(lineid)
-	if haveuser {
-		return c.JSON(http.StatusOK, haveuser)
+	var data struct {
+		LineID string
 	}
-	return c.JSON(http.StatusOK, haveuser)
+	if err := c.Bind(&data); err != nil {
+		log.Print("error ", err)
+		return err
+	}
+	haveuser := repositories.CheckUserByLineID(data.LineID)
+	var message struct {
+		Message string `json:"message"`
+	}
+	if haveuser {
+		message.Message = "have account."
+		return c.JSON(http.StatusOK, message)
+	}
+	message.Message = "not have account."
+	return c.JSON(http.StatusOK, message)
 }
 
 func CheckUserByEmail(c echo.Context) error {
-	email := c.FormValue("email")
-	user, err := repositories.CheckUserByEmail(email)
-	if err != nil {
-		log.Print("have account")
-		return c.JSON(http.StatusBadRequest, user)
+	var data struct {
+		Email string
 	}
-	log.Print("not have account")
-	return c.JSON(http.StatusOK, "Not have account")
+	if err := c.Bind(&data); err != nil {
+		log.Print("error ", err)
+		return err
+	}
+	_, err := repositories.CheckUserByEmail(data.Email)
+	var message struct {
+		Message string `json:"message"`
+	}
+	if err != nil {
+		message.Message = "have account."
+		return c.JSON(400, message)
+	}
+	message.Message = "not have account."
+	return c.JSON(http.StatusOK, message)
 }
 
 func ConnectSocialWithAccount(c echo.Context) error {
-	social := c.FormValue("social")
-	socialID := c.FormValue("socialid")
-	userID := c.FormValue("userid")
-	log.Print("connect ", social, socialID, userID)
-	user, err := repositories.ConnectSocialWithAccount(social, socialID, userID)
+	var data struct {
+		Social   string
+		SocialID string
+		UserID   string
+	}
+	if err := c.Bind(&data); err != nil {
+		log.Print("error ", err)
+		return err
+	}
+	user, err := repositories.ConnectSocialWithAccount(data.Social, data.SocialID, data.UserID)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		message := struct {
+			Message string `json:"message"`
+		}{
+			err.Error(),
+		}
+		return c.JSON(http.StatusBadRequest, message)
 	}
 	jwt := repositories.EncodeJWT(user.(models.User))
-	return c.JSON(http.StatusOK, jwt)
+	success := struct {
+		JWT string `json:"jwt"`
+	}{
+		jwt,
+	}
+	return c.JSON(http.StatusOK, success)
 }
