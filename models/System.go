@@ -11,20 +11,20 @@ import (
 )
 
 type System struct {
-	ID         string `gorm:"primary_key"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	DeletedAt  *time.Time
-	SystemName string `json:"system_name"`
-	OwnerID    string `json:"owner_id"`
+	ID         string     `gorm:"primary_key"`
+	CreatedAt  time.Time  `json:"-"`
+	UpdatedAt  time.Time  `json:"-"`
+	DeletedAt  *time.Time `json:"-"`
+	SystemName string     `json:"system_name"`
+	OwnerID    string     `json:"owner_id"`
 
-	Admin       []Admin                    `gorm:"foreignkey:SystemID"`
-	News        []modelsNews.News          `gorm:"foreignkey:SystemID"`
-	NewsType    []modelsNews.NewsType      `gorm:"foreignkey:SystemID"`
-	Member      []modelsMember.Member      `gorm:"foreignkey:SystemID"`
-	TargetGroup []modelsMember.TargetGroup `gorm:"foreignkey:SystemID"`
-	LineOA      LineOA                     `gorm:"foreignkey:SystemID"`
-	Role        []Role                     `gorm:"foreignkey:SystemID"`
+	Admin       []Admin                    `gorm:"foreignkey:SystemID" json:"-"`
+	News        []modelsNews.News          `gorm:"foreignkey:SystemID" json:"-"`
+	NewsType    []modelsNews.NewsType      `gorm:"foreignkey:SystemID" json:"-"`
+	Member      []modelsMember.Member      `gorm:"foreignkey:SystemID" json:"-"`
+	TargetGroup []modelsMember.TargetGroup `gorm:"foreignkey:SystemID" json:"-"`
+	LineOA      LineOA                     `gorm:"foreignkey:SystemID" json:"-"`
+	Role        []Role                     `gorm:"foreignkey:SystemID" json:"-"`
 }
 
 func (s *System) BeforeCreate(scope *gorm.Scope) error {

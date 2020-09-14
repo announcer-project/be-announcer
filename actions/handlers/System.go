@@ -55,17 +55,57 @@ func GetAboutSystemForLineRegister(c echo.Context) error {
 }
 
 func GetAllSystems(c echo.Context) error {
-	systems, err := repositories.GetAllsystems(c)
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "Not have jwt."
+		return c.JSON(401, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	systems, err := repositories.GetAllsystems(tokens["user_id"].(string))
 	if err != nil {
-		return err
+		message.Message = "Server error."
+		return c.JSON(500, message)
 	}
 	return c.JSON(http.StatusOK, systems)
 }
 
 func CreateSystem(c echo.Context) error {
-	_, err := repositories.CreateSystem(c)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
 	}
-	return c.JSON(http.StatusOK, "Create Success.")
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	var data struct {
+		SystemProfile string
+		Systemname    string
+		NewsTypes     []string
+		LineOA        struct {
+			ChannelID          string
+			ChannelAccessToken string
+			RoleUsers          []struct {
+				RoleName string
+				Require  bool
+			}
+		}
+	}
+	if err := c.Bind(&data); err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	_, err := repositories.CreateSystem(tokens["user_id"].(string), data)
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	message.Message = "create system success."
+	return c.JSON(http.StatusOK, message)
 }

@@ -13,15 +13,11 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
-func GetAllsystems(c echo.Context) (interface{}, error) {
+func GetAllsystems(user_id string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
-	authorization := c.Request().Header.Get("Authorization")
-	log.Print(authorization)
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := DecodeJWT(jwt)
 	admins := []models.Admin{}
-	db.Where("user_id = ?", tokens["user_id"]).Find(&admins)
+	db.Where("user_id = ?", user_id).Find(&admins)
 	for i, admin := range admins {
 		system := models.System{}
 		db.Where("id = ?", admin.SystemID).First(&system)
@@ -64,23 +60,27 @@ type SystemJson struct {
 	}
 }
 
-func CreateSystem(c echo.Context) (interface{}, error) {
-	//check jwt
+func CreateSystem(user_id string, data interface{}) (interface{}, error) {
+	systemReq := data.(struct {
+		SystemProfile string
+		Systemname    string
+		NewsTypes     []string
+		LineOA        struct {
+			ChannelID          string
+			ChannelAccessToken string
+			RoleUsers          []struct {
+				RoleName string
+				Require  bool
+			}
+		}
+	})
+
 	db := database.Open()
 	defer db.Close()
-	authorization := c.Request().Header.Get("Authorization")
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := DecodeJWT(jwt)
 	user := models.User{}
-	db.Where("id = ?", tokens["user_id"]).Find(&user)
+	db.Where("id = ?", user_id).First(&user)
 	if user.ID == "" {
-		return nil, errors.New("You not admin.")
-	}
-	//checkjsonreq
-	systemReq := SystemJson{}
-	if err := c.Bind(&systemReq); err != nil {
-		log.Print("err", err)
-		return nil, err
+		return nil, errors.New("you not user.")
 	}
 	system := models.System{SystemName: systemReq.Systemname, OwnerID: user.ID}
 	system.AddAdmin(models.Admin{UserID: user.ID, Position: "admin"})
@@ -91,13 +91,13 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 	tx.Create(&system)
 	if system.ID == "" {
 		tx.Rollback()
-		return nil, errors.New("Create Fail.")
+		return nil, errors.New("create fail.")
 	}
 	imageByte := Base64toByte(systemReq.SystemProfile)
 	sess := ConnectFileStorage()
 	if err := CreateFile(sess, imageByte, system.ID+".png", "/systems"); err != nil {
 		tx.Rollback()
-		return nil, errors.New("Upload profile system fail.")
+		return nil, errors.New("upload profile system fail.")
 	}
 	log.Print("system Req", systemReq)
 	if systemReq.LineOA.ChannelID != "" {
@@ -120,19 +120,16 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		richmenuidPreRegister, err := CreateRichmenu(systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "Register", richMenuPreRegister)
 		if err != nil {
 			tx.Rollback()
-			log.Print("1. richmenu 1 error (Create rich menu pre register fail.) ", err)
-			return nil, err
+			return nil, errors.New("richmenu 1 error (create rich menu pre register fail.)")
 		}
 		richmenuPreRegister := modelsLineAPI.RichMenu{RichID: richmenuidPreRegister.(string), Status: "preregister"}
 		if err = SetImageToRichMenu(richmenuPreRegister.RichID, systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "richmenu-register.png"); err != nil {
 			tx.Rollback()
-			log.Print("2. set image richmenu 1 error ", err)
-			return nil, err
+			return nil, errors.New("set image richmenu 1 error.")
 		}
 		if err = SetDefaultRichMenu(richmenuPreRegister.RichID, systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken); err != nil {
 			tx.Rollback()
-			log.Print("3. set richmenu 1 error ", err)
-			return nil, err
+			return nil, errors.New("set richmenu 1 error.")
 		}
 		richMenuAfterRegister := linebot.RichMenu{
 			Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
@@ -181,14 +178,12 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		richmenuidAfterRegister, err := CreateRichmenu(systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "Menu", richMenuAfterRegister)
 		if err != nil {
 			tx.Rollback()
-			log.Print("4. richmenu 2 error Create rich menu after register fail.", err)
-			return nil, err
+			return nil, errors.New("richmenu 2 error (create rich menu after register fail.)")
 		}
 		richmenuAfterRegister := modelsLineAPI.RichMenu{RichID: richmenuidAfterRegister.(string), Status: "afterregister"}
 		if err = SetImageToRichMenu(richmenuAfterRegister.RichID, systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "richmenu-afterregister.png"); err != nil {
 			tx.Rollback()
-			log.Print("5. set image richmenu 2 error ", err)
-			return nil, err
+			return nil, errors.New("set image richmenu 2 error.")
 		}
 		for _, role := range systemReq.LineOA.RoleUsers {
 			system.AddRole(models.Role{RoleName: role.RoleName, Require: role.Require})
@@ -201,7 +196,7 @@ func CreateSystem(c echo.Context) (interface{}, error) {
 		lineoa.AddRichMenu(richmenuAfterRegister)
 		system.AddLineOA(lineoa)
 		if err = tx.Save(&system).Error; err != nil {
-			return nil, err
+			return nil, errors.New("server error.")
 		}
 	}
 	tx.Commit()

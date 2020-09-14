@@ -2,17 +2,19 @@ package models
 
 import (
 	"be_nms/models/modelsNews"
-
-	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type Admin struct {
-	gorm.Model
-	UserID   string `json:"user_id"`
-	SystemID string `json:"system_id"`
-	Position string `json:"position"`
-	System   System `gorm:"-" json:"system"`
+	ID        uint       `gorm:"primary_key"`
+	CreatedAt time.Time  `json:"-"`
+	UpdatedAt time.Time  `json:"-"`
+	DeletedAt *time.Time `sql:"index" json:"-"`
+	UserID    string     `json:"user_id"`
+	SystemID  string     `json:"system_id"`
+	Position  string     `json:"position"`
+	System    System     `gorm:"-" json:"system"`
 
-	News         []modelsNews.News         `gorm:"foreignkey:AuthorID"`
-	Announcement []modelsNews.Announcement `gorm:"foreignkey:AdminID"`
+	News         []modelsNews.News         `gorm:"foreignkey:AuthorID" json:"-"`
+	Announcement []modelsNews.Announcement `gorm:"foreignkey:AdminID" json:"-"`
 }
