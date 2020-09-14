@@ -59,27 +59,50 @@ func GetAboutLineBroadcast(c echo.Context) error {
 	return c.JSON(http.StatusOK, aboutLineBroadcast)
 }
 
-type LineMessageBroadcast struct {
-	SystemID          string
-	Everyone          bool
-	CheckNewsTypes    bool
-	NewsTypes         []modelsNews.NewsType
-	CheckTargetGroups bool
-	TargetGroups      []modelsMember.TargetGroup
-	CheckUsers        bool
-	Users             []models.User
-	Messages          []struct {
-		Type string
-		Data string
-		News modelsNews.News
-	}
-}
-
 func BroadcastNewsToLine(c echo.Context) error {
-	data := LineMessageBroadcast{}
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	admin := models.Admin{}
+	system := models.System{}
+	var data struct {
+		SystemID          string
+		Everyone          bool
+		CheckNewsTypes    bool
+		NewsTypes         []modelsNews.NewsType
+		CheckTargetGroups bool
+		TargetGroups      []modelsMember.TargetGroup
+		CheckUsers        bool
+		Users             []models.User
+		Messages          []struct {
+			Type string
+			Data string
+			News modelsNews.News
+		}
+	}
 	if err := c.Bind(&data); err != nil {
-		log.Print("error ", err)
-		return err
+		message.Message = "server error."
+		return c.JSON(500, message)
+	}
+	log.Print(data)
+	db := database.Open()
+	defer db.Close()
+	db.Where("id = ?", data.SystemID).Find(&system)
+	if system.ID == "" {
+		message.Message = "not have system."
+		return c.JSON(401, message)
+	}
+	db.Where("user_id = ? AND system_id = ?", tokens["user_id"].(string), system.ID).Find(&admin)
+	if admin.ID == 0 {
+		message.Message = "you not admin in this system."
+		return c.JSON(401, message)
 	}
 	var messages []linebot.SendingMessage
 	var images []string
@@ -104,12 +127,12 @@ func BroadcastNewsToLine(c echo.Context) error {
 			messages = append(messages, &container)
 		}
 	}
-	db := database.Open()
 	lineoa := models.LineOA{}
-	db.Where("system_id = ?", data.SystemID).First(&lineoa)
+	db.Where("system_id = ?", system.ID).First(&lineoa)
 	bot, err := linebot.New(lineoa.ChannelID, lineoa.ChannelSecret)
 	if err != nil {
-		return err
+		message.Message = "connect line api fail."
+		return c.JSON(500, message)
 	}
 	if data.Everyone {
 		go repositories.BroadcastToEveryone(messages, bot)
@@ -125,5 +148,6 @@ func BroadcastNewsToLine(c echo.Context) error {
 			data.Users,
 		)
 	}
-	return c.JSON(http.StatusOK, "Announce Success!")
+	message.Message = "announce success."
+	return c.JSON(http.StatusOK, message)
 }

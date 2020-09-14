@@ -7,119 +7,99 @@ import (
 	"be_nms/models/modelsNews"
 	"errors"
 	"fmt"
-	"log"
+	"strconv"
 	"time"
-
-	"github.com/labstack/echo/v4"
 )
 
-type NewsType struct {
-	ID       int
-	Newstype string
-	Selected bool
-}
-type News struct {
-	Cover           string
-	Title           string
-	Body            string
-	Checkexpiredate bool
-	Expiredate      string
-	Images          []string
-	Newstypes       []NewsType
-	System          string
-	SystemID        string
-	Status          string
-}
-
 //News
-func CreateNews(c echo.Context) (interface{}, error) {
-	data := News{}
-	if err := c.Bind(&data); err != nil {
-		return nil, err
-	}
-	authorization := c.Request().Header.Get("Authorization")
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := DecodeJWT(jwt)
+func CreateNews(
+	cover,
+	systemid,
+	user_id string,
+	checkexpiredate bool,
+	expiredate,
+	title,
+	body,
+	status string,
+	newstypes []struct {
+		ID   int
+		Name string
+	},
+	images []string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	system := models.System{}
-	db.Where("id = ?", data.SystemID).First(&system)
+	db.Where("id = ?", systemid).First(&system)
 	if system.ID == "" {
-		return nil, errors.New("Have not this system.")
+		return nil, errors.New("not have this system.")
 	}
 	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], system.ID).Find(&admin)
+	db.Where("user_id = ? AND system_id = ?", user_id, system.ID).Find(&admin)
 	if admin.ID == 0 {
-		return nil, errors.New("You not admin.")
+		return nil, errors.New("you not admin.")
 	}
 	input := ""
 	layout := "02-01-2006"
-	if data.Expiredate == "Invalid date" {
-		input = "01-01-2000"
+	if checkexpiredate {
+		input = expiredate
 	} else {
-		input = data.Expiredate
+		input = "10-02-2000"
 	}
-	expiredate, _ := time.Parse(layout, input)
-	news := modelsNews.News{Title: data.Title, Body: data.Body, ExpireDate: expiredate, SystemID: system.ID, AuthorID: admin.ID, Status: data.Status}
-	for _, newstype := range data.Newstypes {
+	expiredateParse, _ := time.Parse(layout, input)
+	news := modelsNews.News{Title: title, Body: body, ExpireDate: expiredateParse, SystemID: system.ID, AuthorID: admin.ID, Status: status}
+	for _, newstype := range newstypes {
 		newstypedb := modelsNews.NewsType{}
 		db.Where("id = ?", newstype.ID).Find(&newstypedb)
 		if newstypedb.ID == 0 {
-			return nil, errors.New("Create fail.")
+			return nil, errors.New("create fail.")
 		}
 		typeofnews := modelsNews.TypeOfNews{NewsID: news.ID, NewsTypeID: newstypedb.ID}
 		news.AddTypeOfNews(typeofnews)
 	}
-	lastNews := modelsNews.News{}
-	db.Last(&lastNews)
-	if lastNews.ID == 0 {
-		UploadImages(data.Images, "1", system, &news)
-	} else {
-		id := fmt.Sprint(lastNews.ID + 1)
-		UploadImages(data.Images, id, system, &news)
+	tx := db.Begin()
+	tx.Create(&news)
+	sess := ConnectFileStorage()
+	if cover != "" {
+		imageByte := Base64toByte(cover)
+		imagename := system.ID + "-" + fmt.Sprint(news.ID) + "-cover.png"
+		if err := CreateFile(sess, imageByte, imagename, "/news"); err != nil {
+			tx.Rollback()
+			return nil, errors.New("Register fail.")
+		}
 	}
-	db.Create(&news)
-	db.Save(&news)
-	if news.ID == 0 {
-		return nil, errors.New("Create fail.")
+	for i, image := range images {
+		imageByte := Base64toByte(image)
+		imagename := system.ID + "-" + fmt.Sprint(news.ID) + "-" + strconv.Itoa(i) + `.png`
+		imagedb := modelsNews.Image{ImageName: imagename, NewsID: news.ID}
+		tx.Create(&imagedb)
+		if err := CreateFile(sess, imageByte, imagename, "/news"); err != nil {
+			tx.Rollback()
+			return nil, errors.New("Register fail.")
+		}
 	}
+	tx.Commit()
 	return news.ID, nil
 }
 
-func UploadImages(images []string, newsid string, system models.System, news *modelsNews.News) error {
-	// db := database.Open()
-	// defer db.Close()
-	// for i, image := range images {
-	// 	checkbase64 := string([]rune(image)[16:22])
-	// 	file := ""
-	// 	if checkbase64 == "base64" {
-	// 		file = string([]rune(image)[23:])
-	// 	} else {
-	// 		file = string([]rune(image)[22:])
-	// 	}
-	// 	dec, err := base64.StdEncoding.DecodeString(file)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	imagename := system.SystemName + "-" + fmt.Sprint(system.ID) + "-" + newsid + "-" + strconv.Itoa(i) + `.jpg`
-	// 	err = CreateFile(dec, imagename)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	img := modelsNews.Image{ImageName: imagename}
-	// 	news.AddImage(img)
-	// 	os.Remove(imagename)
-	// }
-	return nil
-}
+// func UploadImages(images []string, newsid string, system models.System, news *modelsNews.News) error {
+// 	sess := ConnectFileStorage()
+// 	for i, image := range images {
+// 		imageByte := Base64toByte(image)
+// 		imagename := system.SystemName + "-" + system.ID + "-" + newsid + "-" + strconv.Itoa(i) + `.png`
+// 		if err := CreateFile(sess, imageByte, imagename, "/news"); err != nil {
+// 			return errors.New("Register fail.")
+// 		}
+// 	}
+// 	return nil
+// }
 
-func GetNewsByID(c echo.Context, id string) (interface{}, error) {
+func GetNewsByID(status, id string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	news := modelsNews.News{}
-	db.Where("id = ?", id).Preload("TypeOfNews").Preload("Image").Find(&news)
+	db.Where("id = ? and status = ?", id, status).Preload("TypeOfNews").Preload("Image").Find(&news)
 	if news.ID == 0 {
-		return nil, errors.New("Get news error.")
+		return nil, errors.New("news not found")
 	}
 	for i := 0; i < len(news.TypeOfNews); i++ {
 		newstype := modelsNews.NewsType{}
@@ -132,41 +112,36 @@ func GetNewsByID(c echo.Context, id string) (interface{}, error) {
 func GetAllNews(userid, systemid string, status string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
-	log.Print("test2")
-	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", userid, systemid).Find(&admin)
-	log.Print("test3")
-	if admin.ID == 0 {
-		return nil, errors.New("You not admin in this system.")
+	if userid != "publish" {
+		admin := models.Admin{}
+		db.Where("user_id = ? AND system_id = ?", userid, systemid).Find(&admin)
+		if admin.ID == 0 {
+			return nil, errors.New("You not admin in this system.")
+		}
 	}
-	log.Print("test4")
-	log.Print(admin)
 	news := []modelsNews.News{}
 	db.Where("system_id = ? AND status = ?", systemid, status).Preload("TypeOfNews").Find(&news)
 	return news, nil
 }
 
 //NewsType
-func CreateNewsType(c echo.Context) (interface{}, error) {
-	authorization := c.Request().Header.Get("Authorization")
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := DecodeJWT(jwt)
+func CreateNewsType(userid, systemid, newstypename string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], c.FormValue("systemid")).Find(&admin)
-	if admin.ID == 0 {
-		return nil, errors.New("You not admin in this system.")
-	}
 	system := models.System{}
-	db.Where("id = ?", c.FormValue("systemid")).Find(&system)
+	db.Where("id = ?", systemid).Find(&system)
 	if system.ID == "" {
-		return nil, errors.New("Not have system.")
+		return nil, errors.New("not have system.")
 	}
-	newsType := modelsNews.NewsType{NewsTypeName: c.FormValue("newstypename"), SystemID: system.ID}
+	db.Where("user_id = ? AND system_id = ?", userid, systemid).Find(&admin)
+	if admin.ID == 0 {
+		return nil, errors.New("you not admin in this system.")
+	}
+	newsType := modelsNews.NewsType{NewsTypeName: newstypename, SystemID: system.ID}
 	db.Create(&newsType)
 	if newsType.ID == 0 {
-		return nil, errors.New("Create fail.")
+		return nil, errors.New("create fail.")
 	}
 	return newsType, nil
 }
@@ -175,6 +150,11 @@ func DeleteNewsType(userid, systemid string, newstypeid int) error {
 	db := database.Open()
 	defer db.Close()
 	admin := models.Admin{}
+	system := models.System{}
+	db.Where("id = ?", systemid).Find(&system)
+	if system.ID == "" {
+		return errors.New("not have system.")
+	}
 	db.Where("user_id = ? AND system_id = ?", userid, systemid).Find(&admin)
 	if admin.ID == 0 {
 		return errors.New("You not admin in this system.")

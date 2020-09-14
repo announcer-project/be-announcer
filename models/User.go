@@ -9,19 +9,19 @@ import (
 )
 
 type User struct {
-	ID         string `gorm:"primary_key"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	DeletedAt  *time.Time
-	FName      string `json:"fname"`
-	LName      string `json:"lname"`
-	Email      string `gorm:"unique" json:"email"`
-	LineID     string
-	FacebookID string
-	GoogleID   string
+	ID         string     `gorm:"primary_key"`
+	CreatedAt  time.Time  `json:"-"`
+	UpdatedAt  time.Time  `json:"-"`
+	DeletedAt  *time.Time `json:"-"`
+	FName      string     `json:"fname"`
+	LName      string     `json:"lname"`
+	Email      string     `gorm:"unique" json:"email"`
+	LineID     string     `json:"line_id"`
+	FacebookID string     `json:"facebook_id"`
+	GoogleID   string     `json:"google_id"`
 
-	System []System `gorm:"foreignkey:OwnerID`
-	Admin  []Admin  `gorm:"foreignkey:UserID"`
+	System []System `gorm:"foreignkey:OwnerID" json:"-"`
+	Admin  []Admin  `gorm:"foreignkey:UserID" json:"-"`
 }
 
 func (u *User) BeforeCreate(scope *gorm.Scope) error {

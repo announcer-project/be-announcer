@@ -102,13 +102,12 @@ func CheckUserByEmail(c echo.Context) error {
 		log.Print("error ", err)
 		return err
 	}
-	_, err := repositories.CheckUserByEmail(data.Email)
+	user, err := repositories.CheckUserByEmail(data.Email)
+	if err != nil {
+		return c.JSON(400, user)
+	}
 	var message struct {
 		Message string `json:"message"`
-	}
-	if err != nil {
-		message.Message = "have account."
-		return c.JSON(400, message)
 	}
 	message.Message = "not have account."
 	return c.JSON(http.StatusOK, message)
