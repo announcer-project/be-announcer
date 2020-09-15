@@ -2,25 +2,52 @@ package handlers
 
 import (
 	"be_nms/actions/repositories"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
 func CreateRole(c echo.Context) error {
-	_, err := repositories.CreateRole(c)
-	if err != nil {
-		return err
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
 	}
-	return c.JSON(http.StatusOK, "Create success.")
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	var data struct {
+		SystemID string
+		Rolename string
+		Require  bool
+	}
+	if err := c.Bind(&data); err != nil {
+		message.Message = "server error."
+		return c.JSON(500, message)
+	}
+	_, err := repositories.CreateRole(tokens["user_id"].(string), data.SystemID, data.Rolename, data.Require)
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(400, message)
+	}
+	message.Message = "create role success."
+	return c.JSON(http.StatusOK, message)
 }
 
 func GetAllRole(c echo.Context) error {
-	roleuser, err := repositories.GetAllRole(c)
-	if err != nil {
-		return err
+	var message struct {
+		Message string `json:"message"`
 	}
-	log.Print(roleuser)
+	if c.QueryParam("systemid") == "" {
+		message.Message = "not have query param."
+		return c.JSON(400, message)
+	}
+	roleuser, err := repositories.GetAllRole(c.QueryParam("systemid"))
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
 	return c.JSON(http.StatusOK, roleuser)
 }

@@ -46,7 +46,7 @@ func GetAboutSystemForLineRegister(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	roles, err := repositories.GetAllRole(c)
+	roles, err := repositories.GetAllRole(c.QueryParam("systemid"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
