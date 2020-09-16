@@ -1,20 +1,25 @@
 package modelsMember
 
-import (
-	"github.com/jinzhu/gorm"
-)
+import "time"
 
 type TargetGroup struct {
-	gorm.Model
-	TargetGroupName string `json:"targetgroup_name"`
-	NumberOfMembers int    `json:"number_members"`
-	SystemID        string
+	ID              uint       `gorm:"primary_key"`
+	CreatedAt       time.Time  `json:"-"`
+	UpdatedAt       time.Time  `json:"-"`
+	DeletedAt       *time.Time `sql:"index" json:"-"`
+	TargetGroupName string     `json:"targetgroup_name"`
+	NumberOfMembers int        `json:"number_members"`
+	SystemID        string     `json:"system_id"`
 
-	MemberGroup []MemberGroup `gorm:"foreignkey:TargetGroupID"`
+	MemberGroup []MemberGroup `gorm:"foreignkey:TargetGroupID" json:"member_group"`
 	// News     []modelsNews.News     `gorm:"foreignkey:SystemID"`
 	// NewsType []modelsNews.NewsType `gorm:"foreignkey:SystemID"`
 }
 
 func (TargetGroup) TableName() string {
 	return "targetgroups"
+}
+
+func (group *TargetGroup) AddMemberGroup(member MemberGroup) {
+	group.MemberGroup = append(group.MemberGroup, member)
 }

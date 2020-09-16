@@ -28,7 +28,7 @@ func GetAllAboutSystem(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	targetgroups, err := repositories.GetAllTargetGroup(c.QueryParam("systemid"))
+	targetgroups, err := repositories.GetAllTargetGroup(tokens["user_id"].(string), c.QueryParam("systemid"))
 	if err != nil {
 		return err
 	}
