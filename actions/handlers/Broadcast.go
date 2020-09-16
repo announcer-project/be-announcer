@@ -22,11 +22,21 @@ type AboutLineBroadcast struct {
 }
 
 func GetAboutLineBroadcast(c echo.Context) error {
+	var message struct {
+		Message string `json:"message"`
+	}
+	authorization := c.Request().Header.Get("Authorization")
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
 	newstypes, err := repositories.GetAllNewsType(c.QueryParam("systemid"), false)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	targetgroups, err := repositories.GetAllTargetGroup(c.QueryParam("systemid"))
+	targetgroups, err := repositories.GetAllTargetGroup(tokens["user_id"].(string), c.QueryParam("systemid"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
@@ -42,10 +52,6 @@ func GetAboutLineBroadcast(c echo.Context) error {
 		}
 		users = append(users, user.(models.User))
 	}
-	authorization := c.Request().Header.Get("Authorization")
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := repositories.DecodeJWT(jwt)
-	log.Print(tokens["user_id"].(string))
 	news, err := repositories.GetAllNews(tokens["user_id"].(string), c.QueryParam("systemid"), "Publish")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
