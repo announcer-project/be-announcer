@@ -60,7 +60,7 @@ func GetAllSystems(c echo.Context) error {
 		Message string `json:"message"`
 	}
 	if authorization == "" {
-		message.Message = "Not have jwt."
+		message.Message = "not have jwt."
 		return c.JSON(401, message)
 	}
 	jwt := string([]rune(authorization)[7:])
