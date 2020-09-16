@@ -90,9 +90,15 @@ func RegisterGetNews(c echo.Context) (interface{}, error) {
 	}
 }
 
-func GetAllMember(systemid string) (interface{}, error) {
+func GetAllMember(userid, systemid string) (interface{}, error) {
 	members := []modelsMember.Member{}
 	db := database.Open()
+	defer db.Close()
+	admin := models.Admin{}
+	db.Where("user_id = ? and system_id = ?", userid, systemid).First(&admin)
+	if admin.ID == 0 {
+		return nil, errors.New("you not admin.")
+	}
 	db.Where("system_id = ?", systemid).Find(&members)
 	return members, nil
 }

@@ -1,14 +1,17 @@
 package modelsMember
 
 import (
-	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type Member struct {
-	gorm.Model
-	UserID   string
-	SystemID string
-	RoleID   uint
+	ID        uint       `gorm:"primary_key"`
+	CreatedAt time.Time  `json:"-"`
+	UpdatedAt time.Time  `json:"-"`
+	DeletedAt *time.Time `sql:"index" json:"-"`
+	UserID    string     `json:"user_id"`
+	SystemID  string     `json:"system_id"`
+	RoleID    uint       `json:"role_id"`
 
 	MemberGroup      []MemberGroup      `gorm:"foreignkey:MemberID"`
 	MemberInterested []MemberInterested `gorm:"foreignkey:MemberID"`

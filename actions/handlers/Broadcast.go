@@ -41,7 +41,7 @@ func GetAboutLineBroadcast(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 	users := []models.User{}
-	members, err := repositories.GetAllMember(c.QueryParam("systemid"))
+	members, err := repositories.GetAllMember(tokens["user_id"].(string), c.QueryParam("systemid"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
