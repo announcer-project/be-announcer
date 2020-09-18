@@ -51,6 +51,7 @@ func Init() *echo.Echo {
 	e.GET("/line/register/aboutsystem", handlers.GetAboutSystemForLineRegister)
 
 	//Line API Richmenu
+	e.POST("/webhook/:hookid", handlers.WebhookLineOA)
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
 	return e
 }
