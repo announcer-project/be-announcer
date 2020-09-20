@@ -37,3 +37,24 @@ func Login(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, success)
 }
+
+func LineLogin(c echo.Context) error {
+	var data struct {
+		Code string
+	}
+	if err := c.Bind(&data); err != nil {
+		log.Print("error ", err)
+		return err
+	}
+	user, err := repositories.LineLogin(data.Code)
+	if err != nil {
+		return c.JSON(200, user)
+	}
+	jwt := repositories.EncodeJWT(user.(models.User))
+	success := struct {
+		JWT string `json:"jwt"`
+	}{
+		jwt,
+	}
+	return c.JSON(200, success)
+}

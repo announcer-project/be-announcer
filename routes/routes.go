@@ -14,6 +14,7 @@ func Init() *echo.Echo {
 	})
 	//Account
 	e.POST("/login", handlers.Login)
+	e.POST("/login/line", handlers.LineLogin)
 	e.POST("/register", handlers.Register)
 	e.POST("/register/sendotp", handlers.SendOTP)
 	e.POST("/register/checkuser", handlers.CheckUserByEmail)
