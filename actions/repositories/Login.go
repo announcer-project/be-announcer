@@ -36,13 +36,12 @@ type UserLine struct {
 }
 
 func LineLogin(code string) (interface{}, error) {
-	log.Print("code", code)
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
-	data.Set("client_id", "1654658606")
-	data.Set("client_secret", "bf3896bedb6a94e0205b84cde66d6e77")
+	data.Set("client_id", getEnv("CLIENT_ID", ""))
+	data.Set("client_secret", getEnv("CLIENT_SECRET", ""))
 	data.Set("code", code)
-	data.Set("redirect_uri", "http://localhost:3000/login?social=line")
+	data.Set("redirect_uri", getEnv("REDIRECT_URI", ""))
 
 	client := &http.Client{}
 
