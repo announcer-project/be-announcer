@@ -99,7 +99,6 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 		tx.Rollback()
 		return nil, errors.New("upload profile system fail.")
 	}
-	log.Print("system Req", systemReq)
 	if systemReq.LineOA.ChannelID != "" {
 		richMenuPreRegister := linebot.RichMenu{
 			Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
@@ -120,7 +119,7 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 		richmenuidPreRegister, err := CreateRichmenu(systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "Register", richMenuPreRegister)
 		if err != nil {
 			tx.Rollback()
-			return nil, errors.New("richmenu 1 error (create rich menu pre register fail.)")
+			return nil, errors.New("Channel ID or Channel Access Token invalid")
 		}
 		richmenuPreRegister := modelsLineAPI.RichMenu{RichID: richmenuidPreRegister.(string), Status: "preregister"}
 		if err = SetImageToRichMenu(richmenuPreRegister.RichID, systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "richmenu-register.png"); err != nil {
