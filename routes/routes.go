@@ -44,6 +44,7 @@ func Init() *echo.Echo {
 	e.GET("/role/all", handlers.GetAllRole)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
+	e.GET("/connect/line/check", handlers.CheckConnectLineOA)
 	//Broadcast
 	e.GET("/broadcast/line/aboutsystem", handlers.GetAboutLineBroadcast)
 	e.POST("/broadcast/line", handlers.BroadcastNewsToLine)

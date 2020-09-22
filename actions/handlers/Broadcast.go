@@ -6,6 +6,7 @@ import (
 	"be_nms/models"
 	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -125,7 +126,7 @@ func BroadcastNewsToLine(c echo.Context) error {
 			body := strip.StripTags(message.News.Body)
 			container := repositories.CreateNewsCardLine(
 				message.News.Title,
-				"https://announcer-project.s3-ap-southeast-1.amazonaws.com/news/full-team.png",
+				"https://announcer-project.s3-ap-southeast-1.amazonaws.com/news/"+system.ID+"-"+fmt.Sprint(message.News.ID)+"-"+"cover.png",
 				message.News.Title,
 				body,
 				"https://www.google.com",
