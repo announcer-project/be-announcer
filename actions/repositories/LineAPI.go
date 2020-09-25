@@ -79,7 +79,7 @@ func SetDefaultRichMenu(richmenuid, channelid, channelaccesstoken string) error 
 	}
 	return nil
 }
-func SetAfterRegisterRichMenu(richmenuid, channelid, channelaccesstoken, lineuserid string) error {
+func SetLinkRichMenu(richmenuid, channelid, channelaccesstoken, lineuserid string) error {
 	bot, err := linebot.New(channelid, channelaccesstoken)
 	if err != nil {
 		return err

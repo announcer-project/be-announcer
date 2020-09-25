@@ -130,6 +130,29 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 			tx.Rollback()
 			return nil, errors.New("set richmenu 1 error.")
 		}
+		richMenuWaitApprove := linebot.RichMenu{
+			Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
+			Selected:    true,
+			Name:        "Wait",
+			ChatBarText: "Wait",
+			Areas:       []linebot.AreaDetail{},
+		}
+		richmenuidWaitApprove, err := CreateRichmenu(systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "WaitApprove", richMenuWaitApprove)
+		if err != nil {
+			tx.Rollback()
+			return nil, errors.New("Channel ID or Channel Access Token invalid")
+		}
+		richmenuWaitApprove := modelsLineAPI.RichMenu{RichID: richmenuidWaitApprove.(string), Status: "waitapprove"}
+		if err = SetImageToRichMenu(richmenuWaitApprove.RichID, systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "richmenu-waitapprove.png"); err != nil {
+			tx.Rollback()
+			return nil, errors.New("set image richmenu wait error.")
+		}
+		lineoa := models.LineOA{
+			ChannelID:     systemReq.LineOA.ChannelID,
+			ChannelSecret: systemReq.LineOA.ChannelAccessToken,
+		}
+		lineoa.AddRichMenu(richmenuPreRegister)
+		lineoa.AddRichMenu(richmenuWaitApprove)
 		richMenuAfterRegister := linebot.RichMenu{
 			Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
 			Selected:    true,
@@ -174,11 +197,7 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 				},
 			},
 		}
-		lineoa := models.LineOA{
-			ChannelID:     systemReq.LineOA.ChannelID,
-			ChannelSecret: systemReq.LineOA.ChannelAccessToken,
-		}
-		lineoa.AddRichMenu(richmenuPreRegister)
+
 		for _, role := range systemReq.LineOA.RoleUsers {
 			richmenuidAfterRegister, err := CreateRichmenu(systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "Menu", richMenuAfterRegister)
 			if err != nil {

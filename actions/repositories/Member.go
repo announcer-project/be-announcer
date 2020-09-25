@@ -52,18 +52,33 @@ func RegisterGetNews(data struct {
 		return errors.New("not found role.")
 	}
 	richmenu := modelsLineAPI.RichMenu{}
-	db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "afterregister"+role.RoleName).First(&richmenu)
-	if richmenu.ID == 0 {
-		log.Print("2")
-		return errors.New("not found richmenu afterregister")
+	if role.Require {
+		db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "waitapprove").First(&richmenu)
+		if richmenu.ID == 0 {
+			return errors.New("not found richmenu afterregister")
+		}
+	} else {
+		db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "afterregister"+role.RoleName).First(&richmenu)
+		if richmenu.ID == 0 {
+			return errors.New("not found richmenu afterregister")
+		}
 	}
-	log.Print("2")
 	if data.FName == "" && data.LName == "" {
-		log.Print("user have account")
 		db.Where("line_id = ? and deleted_at is null", data.Line).First(&user)
 		log.Print("user", user)
 		tx := db.Begin()
-		member := modelsMember.Member{UserID: user.ID, SystemID: data.SystemID, RoleID: role.ID}
+		member := modelsMember.Member{}
+		if role.Require {
+			member.UserID = user.ID
+			member.SystemID = system.ID
+			member.RoleID = role.ID
+			member.Approve = false
+		} else {
+			member.UserID = user.ID
+			member.SystemID = system.ID
+			member.RoleID = role.ID
+			member.Approve = true
+		}
 		for _, newstype := range data.NewsInterested {
 			memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
 			member.AddNewsTypeInterested(memberInterrested)
@@ -72,19 +87,29 @@ func RegisterGetNews(data struct {
 		if member.ID == 0 {
 			return errors.New("Create member fail")
 		}
-		if err := SetAfterRegisterRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID); err != nil {
+		if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID); err != nil {
 			return err
 		}
 		tx.Commit()
 		return nil
 	} else {
-		log.Print("user not have account")
 		user, err := Register(data.Email, data.FName, data.LName, data.Line, "", "", true, data.ImageUrl, "")
 		if err != nil {
 			return errors.New("Register fail")
 		}
 		tx := db.Begin()
-		member := modelsMember.Member{UserID: user.(models.User).ID, SystemID: data.SystemID, RoleID: role.ID}
+		member := modelsMember.Member{}
+		if role.Require {
+			member.UserID = user.(models.User).ID
+			member.SystemID = system.ID
+			member.RoleID = role.ID
+			member.Approve = false
+		} else {
+			member.UserID = user.(models.User).ID
+			member.SystemID = system.ID
+			member.RoleID = role.ID
+			member.Approve = true
+		}
 		for _, newstype := range data.NewsInterested {
 			memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
 			member.AddNewsTypeInterested(memberInterrested)
@@ -93,7 +118,7 @@ func RegisterGetNews(data struct {
 		if member.ID == 0 {
 			return errors.New("Create member fail")
 		}
-		if err := SetAfterRegisterRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.(models.User).LineID); err != nil {
+		if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.(models.User).LineID); err != nil {
 			return err
 		}
 		tx.Commit()
@@ -110,6 +135,6 @@ func GetAllMember(userid, systemid string) (interface{}, error) {
 	if admin.ID == 0 {
 		return nil, errors.New("you not admin.")
 	}
-	db.Where("system_id = ?", systemid).Find(&members)
+	db.Where("system_id = ? and approve = ?", systemid, true).Find(&members)
 	return members, nil
 }

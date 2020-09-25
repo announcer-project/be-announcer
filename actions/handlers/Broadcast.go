@@ -142,7 +142,7 @@ func BroadcastNewsToLine(c echo.Context) error {
 		return c.JSON(500, message)
 	}
 	if data.Everyone {
-		go repositories.BroadcastToEveryone(messages, bot)
+		go repositories.BroadcastToEveryone(messages, bot, system.ID)
 	} else {
 		go repositories.BroadcastToSelected(
 			messages,

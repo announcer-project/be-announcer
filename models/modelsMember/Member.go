@@ -12,6 +12,7 @@ type Member struct {
 	UserID    string     `json:"user_id"`
 	SystemID  string     `json:"system_id"`
 	RoleID    uint       `json:"role_id"`
+	Approve   bool       `json:"approve"`
 
 	MemberGroup      []MemberGroup      `gorm:"foreignkey:MemberID"`
 	MemberInterested []MemberInterested `gorm:"foreignkey:MemberID"`

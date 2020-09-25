@@ -69,6 +69,9 @@ func DisconnectLineOA(systemid, userid string) error {
 		tx.Where("member_id = ?", member.ID).Delete(&modelsMember.MemberInterested{})
 		tx.Where("member_id = ?", member.ID).Delete(&modelsMember.MemberGroup{})
 	}
+	roles := []models.Role{}
+	db.Where("system_id = ?", system.ID).Find(&roles)
+	tx.Delete(&roles)
 	tx.Delete(&members)
 	tx.Delete(&richmenus)
 	tx.Delete(&lineoa)
@@ -134,6 +137,23 @@ func ConnectLineOA(
 		tx.Rollback()
 		return errors.New("set richmenu 1 error.")
 	}
+	richMenuWaitApprove := linebot.RichMenu{
+		Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
+		Selected:    true,
+		Name:        "Wait",
+		ChatBarText: "Wait",
+		Areas:       []linebot.AreaDetail{},
+	}
+	richmenuidWaitApprove, err := CreateRichmenu(channelid, channelaccesstoken, "WaitApprove", richMenuWaitApprove)
+	if err != nil {
+		tx.Rollback()
+		return errors.New("Channel ID or Channel Access Token invalid")
+	}
+	richmenuWaitApprove := modelsLineAPI.RichMenu{RichID: richmenuidWaitApprove.(string), Status: "waitapprove"}
+	if err = SetImageToRichMenu(richmenuWaitApprove.RichID, channelid, channelaccesstoken, "richmenu-waitapprove.png"); err != nil {
+		tx.Rollback()
+		return errors.New("set image richmenu wait error.")
+	}
 	richMenuAfterRegister := linebot.RichMenu{
 		Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
 		Selected:    true,
@@ -183,6 +203,7 @@ func ConnectLineOA(
 		ChannelSecret: channelaccesstoken,
 	}
 	lineoa.AddRichMenu(richmenuPreRegister)
+	lineoa.AddRichMenu(richmenuWaitApprove)
 	for _, r := range role {
 		richmenuidAfterRegister, err := CreateRichmenu(channelid, channelaccesstoken, "Menu", richMenuAfterRegister)
 		if err != nil {
