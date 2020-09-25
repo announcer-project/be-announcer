@@ -44,3 +44,24 @@ func GetAllRole(systemid string) (interface{}, error) {
 	db.Where("system_id = ?", systemid).Find(&roleuser)
 	return roleuser, nil
 }
+
+func GetRoleRequest(systemid string) (interface{}, error) {
+	members := []modelsMember.Member{}
+	db := database.Open()
+	defer db.Close()
+	db.Where("system_id = ? and approve = ?", systemid, false).Find(&members)
+	var memberrequests []struct {
+		Member modelsMember.Member `json:"member"`
+		User   models.User         `json:"user"`
+	}
+	for _, member := range members {
+		var memberrequest struct {
+			Member modelsMember.Member `json:"member"`
+			User   models.User         `json:"user"`
+		}
+		memberrequest.Member = member
+		db.Where("id = ?", member.UserID).First(&memberrequest.User)
+		memberrequests = append(memberrequests, memberrequest)
+	}
+	return memberrequests, nil
+}

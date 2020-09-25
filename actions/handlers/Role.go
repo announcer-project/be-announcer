@@ -51,3 +51,24 @@ func GetAllRole(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, roleuser)
 }
+
+func GetRoleRequest(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.Param("systemid") == "" {
+		message.Message = "not have param."
+		return c.JSON(400, message)
+	}
+	members, err := repositories.GetRoleRequest(c.Param("systemid"))
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	return c.JSON(200, members)
+}

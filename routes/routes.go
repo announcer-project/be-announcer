@@ -42,6 +42,7 @@ func Init() *echo.Echo {
 	//Role
 	e.POST("/role/create", handlers.CreateRole)
 	e.GET("/role/all", handlers.GetAllRole)
+	e.GET("/role/request/:systemid", handlers.GetRoleRequest)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	e.GET("/connect/line/check", handlers.CheckConnectLineOA)
