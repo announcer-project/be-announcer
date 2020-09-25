@@ -41,6 +41,18 @@ func CreateRichmenu(channelid, channelaccesstoken, richname string, richMenu lin
 	return res.RichMenuID, nil
 }
 
+func DeleteRichmenu(channelid, channelaccesstoken, richmenuid string) error {
+	bot, err := linebot.New(channelid, channelaccesstoken)
+	if err != nil {
+		return err
+	}
+	_, err = bot.DeleteRichMenu(richmenuid).Do()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func SetImageToRichMenu(richmenu, channelid, channelaccesstoken, image string) error {
 	bot, err := linebot.New(channelid, channelaccesstoken)
 	if err != nil {

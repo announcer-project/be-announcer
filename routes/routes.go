@@ -45,6 +45,8 @@ func Init() *echo.Echo {
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	e.GET("/connect/line/check", handlers.CheckConnectLineOA)
+	e.DELETE("/connect/line/:systemid", handlers.DisconnectLinaOA)
+	e.POST("/connect/line", handlers.ConenctLineOA)
 	//Broadcast
 	e.GET("/broadcast/line/aboutsystem", handlers.GetAboutLineBroadcast)
 	e.POST("/broadcast/line", handlers.BroadcastNewsToLine)

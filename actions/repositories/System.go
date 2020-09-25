@@ -110,7 +110,7 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 					Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
 					Action: linebot.RichMenuAction{
 						Type: linebot.RichMenuActionTypeURI,
-						URI:  getEnv("LINE_LIFF", "") + "/line/" + system.SystemName + "/" + fmt.Sprint(system.ID) + "/register",
+						URI:  getEnv("LINE_LIFF", "") + "/" + system.SystemName + "/" + fmt.Sprint(system.ID) + "/register",
 						Text: "click me",
 					},
 				},
