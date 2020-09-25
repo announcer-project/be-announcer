@@ -5,6 +5,7 @@ import (
 	"be_nms/database"
 	"be_nms/models"
 	"be_nms/models/modelsMember"
+	"be_nms/models/modelsNews"
 	"log"
 	"net/http"
 
@@ -12,12 +13,32 @@ import (
 )
 
 func CreateMember(c echo.Context) error {
-	_, err := repositories.RegisterGetNews(c)
-	if err != nil {
-		log.Print("Error : ", err)
-		return c.JSON(401, err)
+	var data struct {
+		IsUser         bool
+		FName          string
+		LName          string
+		Email          string
+		ImageUrl       string
+		RoleID         int
+		NewsInterested []modelsNews.NewsType
+		SystemID       string
+		Line           string
 	}
-	return c.String(http.StatusOK, "OK!")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if err := c.Bind(&data); err != nil {
+		message.Message = "server error."
+		return c.JSON(500, message)
+	}
+	log.Print(data)
+	err := repositories.RegisterGetNews(data)
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	message.Message = "register for get news success."
+	return c.JSON(http.StatusOK, message)
 }
 
 func GetAllMember(c echo.Context) error {

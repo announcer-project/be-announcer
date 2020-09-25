@@ -42,6 +42,13 @@ type AboutForLineRegister struct {
 }
 
 func GetAboutSystemForLineRegister(c echo.Context) error {
+	var message struct {
+		Message string `json:"message"`
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "not have query param."
+		return c.JSON(400, message)
+	}
 	newstypes, err := repositories.GetAllNewsType(c.QueryParam("systemid"), false)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)

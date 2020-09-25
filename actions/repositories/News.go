@@ -166,11 +166,12 @@ func DeleteNewsType(userid, systemid string, newstypeid int) error {
 	db.Delete(&newstype)
 	return nil
 }
+
 func GetAllNewsType(systemid string, getnumberofnews bool) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	newsTypes := []modelsNews.NewsType{}
-	db.Where("system_id = ?", systemid).Find(&newsTypes)
+	db.Where("system_id = ? and deleted_at is null", systemid).Find(&newsTypes)
 	if getnumberofnews {
 		typeofnews := []modelsNews.TypeOfNews{}
 		for i, newstype := range newsTypes {

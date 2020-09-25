@@ -1,6 +1,10 @@
 package database
 
 import (
+	"be_nms/models"
+	"be_nms/models/modelsLineAPI"
+	"be_nms/models/modelsMember"
+	"be_nms/models/modelsNews"
 	"log"
 	"os"
 
@@ -28,20 +32,21 @@ func Open() *gorm.DB {
 
 func Migration(db *gorm.DB) {
 	db.AutoMigrate(
-	// &models.User{},
-	// &models.System{},
-	// &models.Admin{},
-	// &modelsNews.News{},
-	// &modelsNews.Image{},
-	// &modelsNews.Announcement{},
-	// &modelsNews.NewsType{},
-	// &modelsNews.TypeOfNews{},
-	// &modelsMember.TargetGroup{},
-	// &models.LineOA{},
-	// &models.Role{},
-	// &modelsMember.Member{},
-	// &modelsMember.MemberGroup{},
-	// &modelsLineAPI.RichMenu{},
+		&models.User{},
+		&models.System{},
+		&models.Admin{},
+		&modelsNews.News{},
+		&modelsNews.Image{},
+		&modelsNews.Announcement{},
+		&modelsNews.NewsType{},
+		&modelsNews.TypeOfNews{},
+		&modelsMember.TargetGroup{},
+		&models.LineOA{},
+		&models.Role{},
+		&modelsMember.Member{},
+		&modelsMember.MemberInterested{},
+		&modelsMember.MemberGroup{},
+		&modelsLineAPI.RichMenu{},
 	)
 }
 

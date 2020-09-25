@@ -8,8 +8,6 @@ import (
 	"be_nms/models/modelsNews"
 	"errors"
 	"log"
-
-	"github.com/labstack/echo/v4"
 )
 
 type User struct {
@@ -23,70 +21,83 @@ type User struct {
 	SystemID       string
 }
 
-func RegisterGetNews(c echo.Context) (interface{}, error) {
-	data := User{}
-	if err := c.Bind(&data); err != nil {
-		return nil, err
-	}
-	log.Print("Data: ", data)
+func RegisterGetNews(data struct {
+	IsUser         bool
+	FName          string
+	LName          string
+	Email          string
+	ImageUrl       string
+	RoleID         int
+	NewsInterested []modelsNews.NewsType
+	SystemID       string
+	Line           string
+}) error {
 	db := database.Open()
 	defer db.Close()
 	user := models.User{}
+	log.Print("2")
 	system := models.System{}
-	db.Where("id = ?", data.SystemID).First(&system)
+	db.Where("id = ? and deleted_at is null", data.SystemID).First(&system)
 	if system.ID == "" {
-		return nil, errors.New("not found system")
+		return errors.New("not found system.")
 	}
 	lineoa := models.LineOA{}
-	db.Where("system_id = ?", system.ID).First(&lineoa)
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
 	if lineoa.ID == 0 {
-		return nil, errors.New("not found line oa")
+		return errors.New("not found line oa.")
+	}
+	role := models.Role{}
+	db.Where("system_id = ? and id = ? and deleted_at is null", system.ID, data.RoleID).First(&role)
+	if role.ID == 0 {
+		return errors.New("not found role.")
 	}
 	richmenu := modelsLineAPI.RichMenu{}
-	db.Where("line_oa_id = ? and status = ?", lineoa.ID, "afterregister").First(&richmenu)
+	db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "afterregister"+role.RoleName).First(&richmenu)
 	if richmenu.ID == 0 {
-		return nil, errors.New("not found richmenu afterregister")
+		log.Print("2")
+		return errors.New("not found richmenu afterregister")
 	}
-	if data.Fname == "" && data.Lname == "" {
+	log.Print("2")
+	if data.FName == "" && data.LName == "" {
 		log.Print("user have account")
-		db.Where("line_id = ?", data.Line).First(&user)
+		db.Where("line_id = ? and deleted_at is null", data.Line).First(&user)
 		log.Print("user", user)
 		tx := db.Begin()
-		member := modelsMember.Member{UserID: user.ID, SystemID: data.SystemID, RoleID: data.RoleID}
+		member := modelsMember.Member{UserID: user.ID, SystemID: data.SystemID, RoleID: role.ID}
 		for _, newstype := range data.NewsInterested {
 			memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
 			member.AddNewsTypeInterested(memberInterrested)
 		}
 		tx.Create(&member)
 		if member.ID == 0 {
-			return nil, errors.New("Create member fail")
+			return errors.New("Create member fail")
 		}
 		if err := SetAfterRegisterRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID); err != nil {
-			return nil, err
+			return err
 		}
 		tx.Commit()
-		return member, nil
+		return nil
 	} else {
 		log.Print("user not have account")
-		user, err := Register(data.Email, data.Fname, data.Lname, data.Line, "", "", true, data.ImageUrl, "")
+		user, err := Register(data.Email, data.FName, data.LName, data.Line, "", "", true, data.ImageUrl, "")
 		if err != nil {
-			return nil, errors.New("Register fail")
+			return errors.New("Register fail")
 		}
 		tx := db.Begin()
-		member := modelsMember.Member{UserID: user.(models.User).ID, SystemID: data.SystemID, RoleID: data.RoleID}
+		member := modelsMember.Member{UserID: user.(models.User).ID, SystemID: data.SystemID, RoleID: role.ID}
 		for _, newstype := range data.NewsInterested {
 			memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
 			member.AddNewsTypeInterested(memberInterrested)
 		}
 		tx.Create(&member)
 		if member.ID == 0 {
-			return nil, errors.New("Create member fail")
+			return errors.New("Create member fail")
 		}
 		if err := SetAfterRegisterRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.(models.User).LineID); err != nil {
-			return nil, err
+			return err
 		}
 		tx.Commit()
-		return member, nil
+		return nil
 	}
 }
 
@@ -95,7 +106,7 @@ func GetAllMember(userid, systemid string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	admin := models.Admin{}
-	db.Where("user_id = ? and system_id = ?", userid, systemid).First(&admin)
+	db.Where("user_id = ? and system_id = ? and deleted_at is null", userid, systemid).First(&admin)
 	if admin.ID == 0 {
 		return nil, errors.New("you not admin.")
 	}

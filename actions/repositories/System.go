@@ -78,7 +78,7 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	user := models.User{}
-	db.Where("id = ?", user_id).First(&user)
+	db.Where("id = ? and deleted_at is null", user_id).First(&user)
 	if user.ID == "" {
 		return nil, errors.New("you not user.")
 	}
@@ -174,25 +174,25 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 				},
 			},
 		}
-		richmenuidAfterRegister, err := CreateRichmenu(systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "Menu", richMenuAfterRegister)
-		if err != nil {
-			tx.Rollback()
-			return nil, errors.New("richmenu 2 error (create rich menu after register fail.)")
-		}
-		richmenuAfterRegister := modelsLineAPI.RichMenu{RichID: richmenuidAfterRegister.(string), Status: "afterregister"}
-		if err = SetImageToRichMenu(richmenuAfterRegister.RichID, systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "richmenu-afterregister.png"); err != nil {
-			tx.Rollback()
-			return nil, errors.New("set image richmenu 2 error.")
-		}
-		for _, role := range systemReq.LineOA.RoleUsers {
-			system.AddRole(models.Role{RoleName: role.RoleName, Require: role.Require})
-		}
 		lineoa := models.LineOA{
 			ChannelID:     systemReq.LineOA.ChannelID,
 			ChannelSecret: systemReq.LineOA.ChannelAccessToken,
 		}
 		lineoa.AddRichMenu(richmenuPreRegister)
-		lineoa.AddRichMenu(richmenuAfterRegister)
+		for _, role := range systemReq.LineOA.RoleUsers {
+			richmenuidAfterRegister, err := CreateRichmenu(systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "Menu", richMenuAfterRegister)
+			if err != nil {
+				tx.Rollback()
+				return nil, errors.New("richmenu 2 error (create rich menu after register fail.)")
+			}
+			richmenuAfterRegister := modelsLineAPI.RichMenu{RichID: richmenuidAfterRegister.(string), Status: "afterregister" + role.RoleName}
+			if err = SetImageToRichMenu(richmenuAfterRegister.RichID, systemReq.LineOA.ChannelID, systemReq.LineOA.ChannelAccessToken, "richmenu-afterregister.png"); err != nil {
+				tx.Rollback()
+				return nil, errors.New("set image richmenu 2 error.")
+			}
+			system.AddRole(models.Role{RoleName: role.RoleName, Require: role.Require})
+			lineoa.AddRichMenu(richmenuAfterRegister)
+		}
 		system.AddLineOA(lineoa)
 		if err = tx.Save(&system).Error; err != nil {
 			return nil, errors.New("server error.")
