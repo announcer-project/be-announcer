@@ -9,6 +9,6 @@ func GetUserByID(userid string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	user := models.User{}
-	db.Where("id = ?", userid).Find(&user)
+	db.Where("id = ? and deleted_at is null", userid).Find(&user)
 	return user, nil
 }

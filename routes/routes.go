@@ -13,6 +13,7 @@ func Init() *echo.Echo {
 		return c.String(http.StatusOK, "Welcome to Announcer")
 	})
 	//Account
+	e.GET("/user", handlers.GetUserByJWT)
 	e.POST("/login", handlers.Login)
 	e.POST("/login/line", handlers.LineLogin)
 	e.POST("/register", handlers.Register)
@@ -20,6 +21,8 @@ func Init() *echo.Echo {
 	e.POST("/register/checkuser", handlers.CheckUserByEmail)
 	e.POST("/register/checkuserbylineid", handlers.CheckUserByLineID)
 	e.POST("/register/connectsocial", handlers.ConnectSocialWithAccount)
+	//Admin
+	e.GET("/admin/:systemid", handlers.GetAllAdmin)
 	//System
 	e.GET("/system/all", handlers.GetAllSystems)
 	e.GET("/system/:systemid", handlers.GetSystemByID)
