@@ -64,17 +64,16 @@ func DisconnectLineOA(systemid, userid string) error {
 		}
 	}
 	members := []modelsMember.Member{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).Find(&members)
 	tx := db.Begin()
 	for _, member := range members {
-		tx.Where("member_id = ?", member.ID).Delete(&modelsMember.MemberInterested{})
-		tx.Where("member_id = ?", member.ID).Delete(&modelsMember.MemberGroup{})
+		tx.Where("member_id = ? and deleted_at is null", member.ID).Delete(&modelsMember.MemberInterested{})
+		tx.Where("member_id = ? and deleted_at is null", member.ID).Delete(&modelsMember.MemberGroup{})
 	}
-	roles := []models.Role{}
-	db.Where("system_id = ?", system.ID).Find(&roles)
-	tx.Delete(&roles)
-	tx.Delete(&members)
-	tx.Delete(&richmenus)
-	tx.Delete(&lineoa)
+	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&models.Role{})
+	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsMember.Member{})
+	tx.Where("line_oa_id = ? and deleted_at is null", lineoa.ID).Delete(&modelsLineAPI.RichMenu{})
+	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&models.LineOA{})
 	tx.Commit()
 	return nil
 }
@@ -142,7 +141,16 @@ func ConnectLineOA(
 		Selected:    true,
 		Name:        "Wait",
 		ChatBarText: "Wait",
-		Areas:       []linebot.AreaDetail{},
+		Areas: []linebot.AreaDetail{
+			{
+				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
+				Action: linebot.RichMenuAction{
+					Type: linebot.RichMenuActionTypeURI,
+					URI:  getEnv("LINE_LIFF", "") + "/" + system.SystemName + "/" + fmt.Sprint(system.ID) + "/register",
+					Text: "click me",
+				},
+			},
+		},
 	}
 	richmenuidWaitApprove, err := CreateRichmenu(channelid, channelaccesstoken, "WaitApprove", richMenuWaitApprove)
 	if err != nil {

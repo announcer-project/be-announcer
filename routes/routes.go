@@ -43,6 +43,8 @@ func Init() *echo.Echo {
 	e.POST("/role/create", handlers.CreateRole)
 	e.GET("/role/all", handlers.GetAllRole)
 	e.GET("/role/request/:systemid", handlers.GetRoleRequest)
+	e.PUT("/role/request/approve", handlers.ApproveRoleRequest)
+	e.DELETE("/role/request/reject", handlers.RejectRoleRequest)
 	//Social
 	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	e.GET("/connect/line/check", handlers.CheckConnectLineOA)

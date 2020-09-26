@@ -3,6 +3,7 @@ package repositories
 import (
 	"be_nms/database"
 	"be_nms/models"
+	"be_nms/models/modelsLineAPI"
 	"be_nms/models/modelsMember"
 	"errors"
 )
@@ -51,17 +52,115 @@ func GetRoleRequest(systemid string) (interface{}, error) {
 	defer db.Close()
 	db.Where("system_id = ? and approve = ?", systemid, false).Find(&members)
 	var memberrequests []struct {
-		Member modelsMember.Member `json:"member"`
-		User   models.User         `json:"user"`
+		Key    uint   `json:"key"`
+		UserID string `json:"userId"`
+		Name   string `json:"name"`
+		Role   string `json:"role"`
 	}
 	for _, member := range members {
+		user := models.User{}
+		role := models.Role{}
 		var memberrequest struct {
-			Member modelsMember.Member `json:"member"`
-			User   models.User         `json:"user"`
+			Key    uint   `json:"key"`
+			UserID string `json:"userId"`
+			Name   string `json:"name"`
+			Role   string `json:"role"`
 		}
-		memberrequest.Member = member
-		db.Where("id = ?", member.UserID).First(&memberrequest.User)
+		db.Where("id = ?", member.UserID).First(&user)
+		db.Where("id = ?", member.RoleID).First(&role)
+		memberrequest.Key = member.ID
+		memberrequest.UserID = user.ID
+		memberrequest.Name = user.FName + " " + user.LName
+		memberrequest.Role = role.RoleName
 		memberrequests = append(memberrequests, memberrequest)
 	}
 	return memberrequests, nil
+}
+
+func ApproveRoleRequest(memberid uint, userid, systemid string) error {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
+	if system.ID == "" {
+		return errors.New("not found system.")
+	}
+	admin := models.Admin{}
+	db.Where("user_id = ? and system_id = ? and deleted_at is null", userid, systemid).First(&admin)
+	if admin.ID == 0 {
+		return errors.New("you not admin.")
+	}
+	lineoa := models.LineOA{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
+	if lineoa.ID == 0 {
+		return errors.New("not found line oa.")
+	}
+	member := modelsMember.Member{}
+	db.Where("id = ? and system_id = ? and deleted_at is null", memberid, system.ID).First(&member)
+	if member.ID == 0 {
+		return errors.New("not found member request.")
+	}
+	user := models.User{}
+	db.Where("id = ? and deleted_at is null", member.UserID).First(&user)
+	if user.ID == "" {
+		return errors.New("not found user.")
+	}
+	role := models.Role{}
+	db.Where("id = ? and deleted_at is null", member.RoleID).First(&role)
+	if role.ID == 0 {
+		return errors.New("not found role.")
+	}
+	richmenu := modelsLineAPI.RichMenu{}
+	db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "afterregister"+role.RoleName).First(&richmenu)
+	if richmenu.ID == 0 {
+		return errors.New("not found richmenu.")
+	}
+	member.Approve = true
+	tx := db.Begin()
+	tx.Save(&member)
+	err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+	return nil
+}
+
+func RejectRoleRequest(memberid uint, userid, systemid string) error {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
+	if system.ID == "" {
+		return errors.New("not found system.")
+	}
+	admin := models.Admin{}
+	db.Where("user_id = ? and system_id = ? and deleted_at is null", userid, system.ID).First(&admin)
+	if admin.ID == 0 {
+		return errors.New("you not admin.")
+	}
+	member := modelsMember.Member{}
+	user := models.User{}
+	db.Where("id = ? and system_id = ? and deleted_at is null", memberid, system.ID).First(&member)
+	if member.ID == 0 {
+		return errors.New("not found member request.")
+	}
+	db.Where("id = ? and deleted_at is null", member.UserID).First(&user)
+	if user.ID == "" {
+		return errors.New("not found user.")
+	}
+	lineoa := models.LineOA{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
+	if lineoa.ID == 0 {
+		return errors.New("not found line oa.")
+	}
+	richmenu := modelsLineAPI.RichMenu{}
+	db.Where("status = ? and line_oa_id = ? and deleted_at is null", "preregister", lineoa.ID).First(&richmenu)
+	err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID)
+	if err != nil {
+		return err
+	}
+	db.Delete(&member)
+	return nil
 }
