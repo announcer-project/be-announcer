@@ -7,9 +7,7 @@ import (
 	"be_nms/models/modelsNews"
 	"errors"
 	"fmt"
-	"log"
 
-	"github.com/labstack/echo/v4"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -26,20 +24,16 @@ func GetAllsystems(user_id string) (interface{}, error) {
 	return admins, nil
 }
 
-func GetSystemByID(c echo.Context, id string) (interface{}, error) {
+func GetSystemByID(userid, systemid string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
-	authorization := c.Request().Header.Get("Authorization")
-	log.Print(authorization)
-	jwt := string([]rune(authorization)[7:])
-	tokens, _ := DecodeJWT(jwt)
 	admin := models.Admin{}
-	db.Where("user_id = ? AND system_id = ?", tokens["user_id"], id).Find(&admin)
+	db.Where("user_id = ? and system_id = ? and deleted_at is null", userid, systemid).Find(&admin)
 	if admin.ID == 0 {
 		return nil, errors.New("You not admin.")
 	}
 	system := models.System{}
-	db.Where("id = ?", id).Find(&system)
+	db.Where("id = ? and deleted_at is null", systemid).Find(&system)
 	if system.ID == "" {
 		return nil, errors.New("System not found.")
 	}
