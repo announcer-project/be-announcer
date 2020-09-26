@@ -59,3 +59,28 @@ func GetAllTargetGroup(userid, systemid string) (interface{}, error) {
 	db.Where("system_id = ?", systemid).Find(&targetGroups)
 	return targetGroups, nil
 }
+
+func DeleteTargetgroup(systemid, userid, targetgroupid string) error {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
+	if system.ID == "" {
+		return errors.New("system not found.")
+	}
+	admin := models.Admin{}
+	db.Where("user_id = ? and system_id = ? and deleted_at is null", userid, system.ID).First(&admin)
+	if admin.ID == 0 {
+		return errors.New("you not admin.")
+	}
+	targetgroup := modelsMember.TargetGroup{}
+	db.Where("id = ? and system_id = ? and deleted_at is null", targetgroupid, system.ID).First(&targetgroup)
+	if targetgroup.ID == 0 {
+		return errors.New("target group not found.")
+	}
+	tx := db.Begin()
+	tx.Where("target_group_id = ? and deleted_at is null", targetgroup.ID).Delete(&modelsMember.MemberGroup{})
+	tx.Where("id = ? and system_id = ? and deleted_at is null", targetgroup.ID, system.ID).Delete(&modelsMember.TargetGroup{})
+	tx.Commit()
+	return nil
+}

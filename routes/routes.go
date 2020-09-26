@@ -40,7 +40,8 @@ func Init() *echo.Echo {
 	e.GET("/news/newstype/all", handlers.GetAlNewsType)
 	//TargetGroup
 	e.POST("/targetgroup/create", handlers.CreateTargetGroup)
-	e.GET("/targetgroup/all", handlers.GetAllTargetGroup)
+	e.GET("/targetgroup/:systemid/all", handlers.GetAllTargetGroup)
+	e.DELETE("/targetgroup/:systemid/:targetgroupid", handlers.DeleteTargetGroup)
 	//Member
 	e.GET("/member/all", handlers.GetAllMember)
 	//Role

@@ -15,10 +15,10 @@ func GetAllsystems(user_id string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	admins := []models.Admin{}
-	db.Where("user_id = ?", user_id).Find(&admins)
+	db.Where("user_id = ? and deleted_at is null", user_id).Find(&admins)
 	for i, admin := range admins {
 		system := models.System{}
-		db.Where("id = ?", admin.SystemID).First(&system)
+		db.Where("id = ? and deleted_at is null", admin.SystemID).First(&system)
 		admins[i].System = system
 	}
 	return admins, nil
