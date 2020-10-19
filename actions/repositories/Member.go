@@ -87,6 +87,12 @@ func RegisterGetNews(data struct {
 		if member.ID == 0 {
 			return errors.New("Create member fail")
 		}
+		targetgroup := modelsMember.TargetGroup{}
+		db.Where("target_group_name = ? and deleted is null", role.RoleName).First(&targetgroup)
+		membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
+		tx.Create(&membergroup)
+		targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
+		tx.Update(&targetgroup)
 		if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID); err != nil {
 			return err
 		}
@@ -118,6 +124,12 @@ func RegisterGetNews(data struct {
 		if member.ID == 0 {
 			return errors.New("Create member fail")
 		}
+		targetgroup := modelsMember.TargetGroup{}
+		db.Where("target_group_name = ? and deleted is null", role.RoleName).First(&targetgroup)
+		membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
+		tx.Create(&membergroup)
+		targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
+		tx.Update(&targetgroup)
 		if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.(models.User).LineID); err != nil {
 			return err
 		}

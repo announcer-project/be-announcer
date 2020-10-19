@@ -129,7 +129,7 @@ func BroadcastNewsToLine(c echo.Context) error {
 				"https://announcer-project.s3-ap-southeast-1.amazonaws.com/news/"+system.ID+"-"+fmt.Sprint(message.News.ID)+"-"+"cover.png",
 				message.News.Title,
 				body,
-				"https://www.google.com",
+				"https://announcer-system.com/news/"+system.SystemName+"/"+system.ID+"/"+fmt.Sprint(message.News.ID),
 			)
 			messages = append(messages, &container)
 		}

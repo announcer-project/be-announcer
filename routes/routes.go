@@ -27,6 +27,7 @@ func Init() *echo.Echo {
 	e.GET("/system/all", handlers.GetAllSystems)
 	e.GET("/system/:systemid", handlers.GetSystemByID)
 	e.POST("/system/create", handlers.CreateSystem)
+	e.DELETE("/system/:systemid", handlers.DeleteSystem)
 	//NewsManagement
 	e.GET("/aboutsystem", handlers.GetAllAboutSystem)
 	e.GET("/news/all", handlers.GetAllNewsByClassify)
@@ -47,6 +48,7 @@ func Init() *echo.Echo {
 	//Role
 	e.POST("/role/create", handlers.CreateRole)
 	e.GET("/role/all", handlers.GetAllRole)
+	e.DELETE("/role/:systemid/:roleid", handlers.DeleteRole)
 	e.GET("/role/request/:systemid", handlers.GetRoleRequest)
 	e.PUT("/role/request/approve", handlers.ApproveRoleRequest)
 	e.DELETE("/role/request/reject", handlers.RejectRoleRequest)

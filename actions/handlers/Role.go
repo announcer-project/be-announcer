@@ -53,6 +53,30 @@ func GetAllRole(c echo.Context) error {
 	return c.JSON(http.StatusOK, roleuser)
 }
 
+func DeleteRole(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	if c.Param("systemid") == "" || c.Param("roleid") == "" {
+		message.Message = "not found param."
+		return c.JSON(400, message)
+	}
+	err := repositories.DeleteRole(c.Param("systemid"), tokens["user_id"].(string), c.Param("roleid"))
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	message.Message = "delete success."
+	return c.JSON(200, message)
+}
+
 func GetRoleRequest(c echo.Context) error {
 	authorization := c.Request().Header.Get("Authorization")
 	var message struct {

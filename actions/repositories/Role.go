@@ -164,3 +164,46 @@ func RejectRoleRequest(memberid uint, userid, systemid string) error {
 	db.Delete(&member)
 	return nil
 }
+
+func DeleteRole(systemid, userid, roleid string) error {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
+	if system.ID == "" {
+		return errors.New("system not found.")
+	}
+	admin := models.Admin{}
+	db.Where("system_id = ? and user_id = ? and deleted_at is null", system.ID, userid).First(&admin)
+	if admin.ID == 0 {
+		return errors.New("you not admin.")
+	}
+	role := models.Role{}
+	db.Where("id = ? and deleted_at is null", roleid).First(&role)
+	if role.ID == 0 {
+		return errors.New("role not found.")
+	}
+	targetgroup := modelsMember.TargetGroup{}
+	db.Where("target_group_name = ? and system_id = ? and deleted_at is null", role.RoleName, system.ID).First(&targetgroup)
+	tx := db.Begin()
+	if targetgroup.ID != 0 {
+		tx.Where("target_group_id = ? and deleted_at is null", targetgroup.ID).Delete(&modelsMember.MemberGroup{})
+		tx.Where("target_group_name = ? and system_id = ? and deleted_at is null", role.RoleName, system.ID).Delete(&modelsMember.TargetGroup{})
+	}
+	members := []modelsMember.Member{}
+	db.Where("role_id = ? and deleted_at is null", role.ID).Find(&members)
+	lineoa := models.LineOA{}
+	db.Where("system_id =? and deleted_at is null", system.ID).First(&lineoa)
+	richmenu := modelsLineAPI.RichMenu{}
+	db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "preregister").First(&richmenu)
+	for _, member := range members {
+		user := models.User{}
+		db.Where("id = ? and deleted_at is null", member.UserID).First(&user)
+		tx.Where("member_id = ? and deleted_at is null", member.ID).Delete(&modelsMember.MemberInterested{})
+		SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID)
+	}
+	tx.Where("role_id = ? and deleted_at is null", role.ID).Delete(&modelsMember.Member{})
+	tx.Where("id = ? and deleted_at is null", role.ID).Delete(&models.Role{})
+	tx.Commit()
+	return nil
+}

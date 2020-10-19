@@ -4,6 +4,7 @@ import (
 	"be_nms/database"
 	"be_nms/models"
 	"be_nms/models/modelsLineAPI"
+	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
 	"errors"
 	"fmt"
@@ -54,6 +55,32 @@ type SystemJson struct {
 	}
 }
 
+func DeleteSystem(systemid, userid string) error {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
+	admin := models.Admin{}
+	db.Where("system_id = ? and position = ? and user_id = ? and deleted_at is null", systemid, "admin", userid).First(&admin)
+	if admin.ID == 0 {
+		return errors.New("you not admin.")
+	}
+	news := []modelsNews.News{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).Find(&news)
+	tx := db.Begin()
+	for _, n := range news {
+		tx.Where("news_id = ? and deleted_at is null", n.ID).Delete(&modelsNews.Image{})
+		tx.Where("news_id = ? and deleted_at is null", n.ID).Delete(&modelsNews.TypeOfNews{})
+	}
+	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsNews.News{})
+	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsNews.NewsType{})
+	DisconnectLineOA(systemid, userid)
+	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsMember.TargetGroup{})
+	tx.Where("system_id = ? and user_id = ? and deleted_at is null", systemid, userid).Delete(&models.Admin{})
+	tx.Where("id = ? and deleted_at is null", systemid).Delete(&models.System{})
+	tx.Commit()
+	return nil
+}
 func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 	systemReq := data.(struct {
 		SystemProfile string
