@@ -16,3 +16,11 @@ func GetNewsByID(id string, systemid string) (interface{}, error) {
 	}
 	return news, nil
 }
+
+func GetAllNews(status string, systemid string) interface{} {
+	db := database.Open()
+	defer db.Close()
+	news := []modelsNews.News{}
+	db.Where("status = ? AND system_id = ?", status, systemid).Find(&news)
+	return news
+}

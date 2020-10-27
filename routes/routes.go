@@ -71,5 +71,7 @@ func Init() *echo.Echo {
 
 	//Open API
 	e.GET("/v1/news/:id", openapi.GetNewsbyID)
+	e.GET("/v1/news/all/publish", openapi.GetAllNewsPublish)
+	e.GET("/v1/news/all/draft", openapi.GetAllNewsDraft)
 	return e
 }

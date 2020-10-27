@@ -30,3 +30,37 @@ func GetNewsbyID(c echo.Context) error {
 	}
 	return c.JSON(200, news)
 }
+
+func GetAllNewsPublish(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "not have query param"
+		return c.JSON(400, message)
+	}
+	news := openapi.GetAllNews("publish", c.QueryParam("systemid"))
+	return c.JSON(200, news)
+}
+
+func GetAllNewsDraft(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "not have query param"
+		return c.JSON(400, message)
+	}
+	news := openapi.GetAllNews("draft", c.QueryParam("systemid"))
+	return c.JSON(200, news)
+}
