@@ -2,6 +2,7 @@ package routes
 
 import (
 	"be_nms/actions/handlers"
+	"be_nms/actions/handlers/openapi"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -67,5 +68,8 @@ func Init() *echo.Echo {
 	//Line API Richmenu
 	e.POST("/webhook/:hookid", handlers.WebhookLineOA)
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
+
+	//Open API
+	e.GET("/v1/news/:id", openapi.GetNewsbyID)
 	return e
 }
