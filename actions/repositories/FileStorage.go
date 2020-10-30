@@ -32,13 +32,20 @@ func ConnectFileStorage() *session.Session {
 	return session
 }
 
-func Base64toByte(imageBase64 string) []byte {
+func Base64toByte(Base64, typeBase64 string) []byte {
 	file := ""
-	checkbase64 := string([]rune(imageBase64)[16:22])
-	if checkbase64 == "base64" {
-		file = string([]rune(imageBase64)[23:])
-	} else {
-		file = string([]rune(imageBase64)[22:])
+	if typeBase64 == "image" {
+		checkbase64 := string([]rune(Base64)[16:22])
+		if checkbase64 == "base64" {
+			file = string([]rune(Base64)[23:])
+		} else {
+			file = string([]rune(Base64)[22:])
+		}
+	}
+	if typeBase64 == "json" {
+		log.Print("base64 :", Base64)
+		file = string([]rune(Base64)[23:])
+		log.Print("json : ", file)
 	}
 	dec, err := base64.StdEncoding.DecodeString(file)
 	if err != nil {

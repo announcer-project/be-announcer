@@ -67,5 +67,12 @@ func Init() *echo.Echo {
 	//Line API Richmenu
 	e.POST("/webhook/:hookid", handlers.WebhookLineOA)
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
+
+	//Dialogflow
+	e.POST("/dialogflow/connect", handlers.ConnectDialogflow)
+
+	// e.POST("/testbot", handlers.Webhook)
+	// e.POST("/createintent", handlers.CreateIntent)
+	// e.POST("/listintent", handlers.ListIntent)
 	return e
 }

@@ -25,6 +25,7 @@ type System struct {
 	TargetGroup []modelsMember.TargetGroup `gorm:"foreignkey:SystemID" json:"-"`
 	LineOA      LineOA                     `gorm:"foreignkey:SystemID" json:"-"`
 	Role        []Role                     `gorm:"foreignkey:SystemID" json:"-"`
+	Dialogflow  DialogflowProcessor        `gorm:"foreignkey:SystemID" json:"-"`
 }
 
 func (s *System) BeforeCreate(scope *gorm.Scope) error {
