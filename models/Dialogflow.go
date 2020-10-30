@@ -28,13 +28,14 @@ type NLPResponse struct {
 	Intent     string            `json:"intent"`
 	Confidence float32           `json:"confidence"`
 	Entities   map[string]string `json:"entities"`
+	Response   string            `json:"response"`
 }
 
 func (DialogflowProcessor) TableName() string {
 	return "dialogflow"
 }
 
-func (dp *DialogflowProcessor) Init(a ...string) (err error) {
+func (dp *DialogflowProcessor) Init() (err error) {
 	dp.ctx = context.Background()
 	sessionClient, err := dialogflow.NewSessionsClient(dp.ctx, option.WithCredentialsFile(dp.AuthJSONFilePath))
 	if err != nil {
@@ -68,6 +69,7 @@ func (dp *DialogflowProcessor) ProcessNLP(rawMessage string, username string) (r
 	}
 	queryResult := response.GetQueryResult()
 	if queryResult.Intent != nil {
+		r.Response = queryResult.FulfillmentText
 		r.Intent = queryResult.Intent.DisplayName
 		r.Confidence = float32(queryResult.IntentDetectionConfidence)
 	}
