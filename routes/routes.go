@@ -53,7 +53,6 @@ func Init() *echo.Echo {
 	e.PUT("/role/request/approve", handlers.ApproveRoleRequest)
 	e.DELETE("/role/request/reject", handlers.RejectRoleRequest)
 	//Social
-	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	e.GET("/connect/line/check", handlers.CheckConnectLineOA)
 	e.DELETE("/connect/line/:systemid", handlers.DisconnectLinaOA)
 	e.POST("/connect/line", handlers.ConenctLineOA)
@@ -65,12 +64,11 @@ func Init() *echo.Echo {
 	e.GET("/line/register/aboutsystem", handlers.GetAboutSystemForLineRegister)
 
 	//Line API Richmenu
-	e.POST("/webhook/:hookid", handlers.WebhookLineOA)
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
 
 	//Dialogflow
 	e.POST("/dialogflow/connect", handlers.ConnectDialogflow)
-
+	e.POST("/webhook/:systemid", handlers.Webhook)
 	// e.POST("/testbot", handlers.Webhook)
 	// e.POST("/createintent", handlers.CreateIntent)
 	// e.POST("/listintent", handlers.ListIntent)

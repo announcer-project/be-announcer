@@ -6,8 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2"
@@ -165,6 +167,54 @@ func ConnectDialogflow(
 	return nil
 }
 
+func Webhook(systemid, message string) (interface{}, error) {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
+	if system.ID == "" {
+		return nil, errors.New("system not found.")
+	}
+	df := models.DialogflowProcessor{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
+	if df.ID == 0 {
+		return nil, errors.New("not connect dialogflow.")
+	}
+	err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove("dialogflow/" + df.ProjectID + ".json")
+	df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
+	err = df.Init()
+	if err != nil {
+		return nil, err
+	}
+	response := df.ProcessNLP(message, "testUser")
+	return response, nil
+}
+
+func DowloadFileJSON(URL, filename string) error {
+	response, err := http.Get(URL)
+	if err != nil {
+	}
+	defer response.Body.Close()
+
+	//Create a empty file
+	file, err := os.Create("dialogflow/" + filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	//Write the bytes to the fiel
+	_, err = io.Copy(file, response.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func CreateIntent(projectID, displayName string, trainingPhraseParts, messageTexts []string) error {
 	ctx := context.Background()
 
@@ -234,3 +284,21 @@ func ListIntents(projectID string) ([]*dialogflowpb.Intent, error) {
 
 	return intents, nil
 }
+
+// func GetIntent(projectID string) (*dialogflowpb.Intent, error) {
+// 	ctx := context.Background()
+// 	c, err := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile("dialogflow/"+projectID+".json"))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer c.Close()
+// 	// parent := fmt.Sprintf("projects/%s/agent", projectID)
+// 	name := fmt.Sprintf("projects/%s/agent/intents/%s", projectID, "หิว")
+// 	// name:="projects/<Project ID>/agent/intents/<Intent ID>"
+// 	req := &dialogflowpb.GetIntentRequest{Name: name}
+// 	resp, err := c.GetIntent(ctx, req)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return resp, nil
+// }
