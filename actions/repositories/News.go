@@ -60,7 +60,7 @@ func CreateNews(
 	tx.Create(&news)
 	sess := ConnectFileStorage()
 	if cover != "" {
-		imageByte := Base64toByte(cover)
+		imageByte := Base64toByte(cover, "image")
 		imagename := system.ID + "-" + fmt.Sprint(news.ID) + "-cover.png"
 		if err := CreateFile(sess, imageByte, imagename, "/news"); err != nil {
 			tx.Rollback()
@@ -68,7 +68,7 @@ func CreateNews(
 		}
 	}
 	for i, image := range images {
-		imageByte := Base64toByte(image)
+		imageByte := Base64toByte(image, "image")
 		imagename := system.ID + "-" + fmt.Sprint(news.ID) + "-" + strconv.Itoa(i) + `.png`
 		imagedb := modelsNews.Image{ImageName: imagename, NewsID: news.ID}
 		tx.Create(&imagedb)

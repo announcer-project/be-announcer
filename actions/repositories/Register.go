@@ -39,7 +39,7 @@ func Register(email, fname, lname, line, facebook, google string, imagesocial bo
 			return nil, errors.New("Register fail.")
 		}
 	} else {
-		imageByte := Base64toByte(imageProfile)
+		imageByte := Base64toByte(imageProfile, "image")
 		if err := CreateFile(sess, imageByte, user.ID+".jpg", "/profile"); err != nil {
 			tx.Rollback()
 			return nil, errors.New("Register fail.")

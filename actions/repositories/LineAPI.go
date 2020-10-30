@@ -117,7 +117,7 @@ func CreateTextLine(text string) linebot.TextMessage {
 
 func CreateImageLine(base64img string) (linebot.ImageMessage, string) {
 	session := ConnectFileStorage()
-	imageByte := Base64toByte(base64img)
+	imageByte := Base64toByte(base64img, "image")
 	Filename := "BC-"
 	for i := 0; i < 6; i++ {
 		ranType := rand.Intn(2)
