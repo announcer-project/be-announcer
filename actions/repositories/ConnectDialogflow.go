@@ -3,6 +3,7 @@ package repositories
 import (
 	"be_nms/database"
 	"be_nms/models"
+	"be_nms/models/modelsNews"
 	"context"
 	"errors"
 	"fmt"
@@ -64,6 +65,7 @@ func ConnectDialogflow(
 		return err
 	}
 	defer os.Remove("dialogflow/" + projectID + ".json")
+
 	sess := ConnectFileStorage()
 	if err := CreateFile(sess, fileByte, projectID+".json", "/dialogflow"); err != nil {
 		return errors.New("upload auth json file fail.")
@@ -71,13 +73,41 @@ func ConnectDialogflow(
 	ctx := context.Background()
 	_, clientErr := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile("dialogflow/"+projectID+".json"))
 	if clientErr != nil {
-		log.Print(clientErr)
 		return errors.New(clientErr.Error())
 	}
 
-	df := models.DialogflowProcessor{ProjectID: projectID, AuthJSONFilePath: getEnv("STORAGE_PATH", "") + "/dialogflow/" + projectID + ".json", Lang: lang, TimeZone: timeZone}
+	newstypes := []modelsNews.NewsType{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).Find(&newstypes)
+	messages := []models.Message{}
+	for _, newstype := range newstypes {
+		msg := models.Message{IntentName: newstype.NewsTypeName, TypeMessage: "news"}
+		messages = append(messages, msg)
+	}
+	df := models.DialogflowProcessor{
+		ProjectID:        projectID,
+		AuthJSONFilePath: getEnv("STORAGE_PATH", "") + "/dialogflow/" + projectID + ".json",
+		Lang:             lang,
+		TimeZone:         timeZone,
+		Message:          messages,
+	}
 	system.Dialogflow = df
-	db.Save(&system)
+	tx := db.Begin()
+	tx.Save(&system)
+	err = DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
+	if err != nil {
+		return err
+	}
+	defer os.Remove("dialogflow/" + df.ProjectID + ".json")
+	df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
+	err = df.Init()
+	for _, newstype := range newstypes {
+		err = CreateIntentNewstype(newstype.NewsTypeName, []string{newstype.NewsTypeName}, []string{}, df)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	tx.Commit()
 	return nil
 }
 
@@ -128,10 +158,6 @@ func DowloadFileJSON(URL, filename string) error {
 	}
 	return nil
 }
-
-// func CreateIntent(projectID, displayName string, trainingPhraseParts, messageTexts []string) error {
-
-// }
 
 func ListIntents(userID, systemID string) ([]*dialogflowpb.Intent, error) {
 	db := database.Open()
@@ -248,6 +274,43 @@ func CreateIntent(userID, systemID, displayName string, trainingPhraseParts, mes
 	df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
 	err = df.Init()
 
+	ctx := context.Background()
+
+	intentsClient, clientErr := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile(df.AuthJSONFilePath))
+	if clientErr != nil {
+		log.Print(clientErr)
+		return clientErr
+	}
+	defer intentsClient.Close()
+
+	parent := fmt.Sprintf("projects/%s/agent", df.ProjectID)
+
+	var targetTrainingPhrases []*dialogflowpb.Intent_TrainingPhrase
+	var targetTrainingPhraseParts []*dialogflowpb.Intent_TrainingPhrase_Part
+	for _, partString := range trainingPhraseParts {
+		part := dialogflowpb.Intent_TrainingPhrase_Part{Text: partString}
+		targetTrainingPhraseParts = []*dialogflowpb.Intent_TrainingPhrase_Part{&part}
+		targetTrainingPhrase := dialogflowpb.Intent_TrainingPhrase{Type: dialogflowpb.Intent_TrainingPhrase_EXAMPLE, Parts: targetTrainingPhraseParts}
+		targetTrainingPhrases = append(targetTrainingPhrases, &targetTrainingPhrase)
+	}
+
+	intentMessageTexts := dialogflowpb.Intent_Message_Text{Text: messageTexts}
+	wrappedIntentMessageTexts := dialogflowpb.Intent_Message_Text_{Text: &intentMessageTexts}
+	intentMessage := dialogflowpb.Intent_Message{Message: &wrappedIntentMessageTexts}
+
+	target := dialogflowpb.Intent{DisplayName: displayName, WebhookState: dialogflowpb.Intent_WEBHOOK_STATE_UNSPECIFIED, TrainingPhrases: targetTrainingPhrases, Messages: []*dialogflowpb.Intent_Message{&intentMessage}}
+
+	request := dialogflowpb.CreateIntentRequest{Parent: parent, Intent: &target}
+
+	_, requestErr := intentsClient.CreateIntent(ctx, &request)
+	if requestErr != nil {
+		return requestErr
+	}
+
+	return nil
+}
+
+func CreateIntentNewstype(displayName string, trainingPhraseParts, messageTexts []string, df models.DialogflowProcessor) error {
 	ctx := context.Background()
 
 	intentsClient, clientErr := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile(df.AuthJSONFilePath))
