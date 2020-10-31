@@ -70,8 +70,8 @@ func Init() *echo.Echo {
 	e.GET("/dialogflow/check", handlers.CheckConnectDialogflow)
 	e.POST("/dialogflow/connect", handlers.ConnectDialogflow)
 	e.POST("/webhook/:systemid", handlers.Webhook)
+	e.GET("/dialogflow/intent/list", handlers.ListIntent)
 	// e.POST("/testbot", handlers.Webhook)
 	// e.POST("/createintent", handlers.CreateIntent)
-	// e.POST("/listintent", handlers.ListIntent)
 	return e
 }

@@ -171,20 +171,40 @@ func CreateIntent(projectID, displayName string, trainingPhraseParts, messageTex
 	return nil
 }
 
-func ListIntents(projectID string) ([]*dialogflowpb.Intent, error) {
+func ListIntents(userID, systemID string) ([]*dialogflowpb.Intent, error) {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemID).First(&system)
+	if system.ID == "" {
+		return nil, errors.New("system not found.")
+	}
+	admin := models.Admin{}
+	db.Where("user_id = ? and system_id = ?", userID, system.ID).First(&admin)
+	if admin.ID == 0 {
+		return nil, errors.New("you not admin.")
+	}
+	df := models.DialogflowProcessor{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
+	if df.ID == 0 {
+		return nil, errors.New("system not connect dialogflow.")
+	}
+	err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove("dialogflow/" + df.ProjectID + ".json")
+	df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
+	err = df.Init()
 	ctx := context.Background()
 
-	intentsClient, clientErr := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile("dialogflow/announcer-iysl-4dba8d62734e.json"))
+	intentsClient, clientErr := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile(df.AuthJSONFilePath))
 	if clientErr != nil {
 		return nil, clientErr
 	}
 	defer intentsClient.Close()
 
-	if projectID == "" {
-		return nil, errors.New(fmt.Sprintf("Received empty project (%s)", projectID))
-	}
-
-	parent := fmt.Sprintf("projects/%s/agent", projectID)
+	parent := fmt.Sprintf("projects/%s/agent", df.ProjectID)
 
 	request := dialogflowpb.ListIntentsRequest{Parent: parent}
 
