@@ -6,6 +6,29 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func CheckConnectDialogflow(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	checked, err := repositories.CheckConnectDialogflow(tokens["user_id"].(string), c.QueryParam("systemid"))
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	return c.JSON(200, checked)
+}
+
 func ConnectDialogflow(c echo.Context) error {
 	authorization := c.Request().Header.Get("Authorization")
 	var message struct {
@@ -80,29 +103,115 @@ func Webhook(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
-// func ListIntent(c echo.Context) error {
-// 	dp := repositories.DialogflowProcessor{}
-// 	projectID := "announcer-iysl"
-// 	filePath := "dialogflow/announcer-iysl-4dba8d62734e.json"
-// 	language := "th"
-// 	timeZone := "Asia/Bangkok"
+func ListIntent(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	response, err := repositories.ListIntents(tokens["user_id"].(string), c.QueryParam("systemid"))
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, response)
+}
 
-// 	// var message struct {
-// 	// 	Message string `json:"message"`
-// 	// }
-// 	// messageEvent := MessageEvent{}
-// 	// if err := c.Bind(&messageEvent); err != nil {
-// 	// 	message.Message = "server error."
-// 	// 	return c.JSON(500, message)
-// 	// }
-// 	// log.Print("test ", messageEvent)
-// 	dp.Init(projectID, filePath, language, timeZone)
-// 	// response := dp.ProcessNLP(messageEvent.Events[0].Message.Text, "testUser")
-// 	response, err := repositories.ListIntents(projectID)
-// 	if err != nil {
-// 		log.Print(err)
-// 		return c.JSON(500, err)
-// 	}
-// 	log.Print(response)
-// 	return c.JSON(200, response)
-// }
+func GetIntent(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
+	var data struct {
+		IntentName string
+	}
+	if err := c.Bind(&data); err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	response, err := repositories.GetIntent(tokens["user_id"].(string), c.QueryParam("systemid"), data.IntentName)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, response)
+}
+
+func CreateIntent(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
+	var data struct {
+		DisplayName    string
+		TrainingPhrase []string
+		MessageTexts   []string
+	}
+	if err := c.Bind(&data); err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	err := repositories.CreateIntent(tokens["user_id"].(string), c.QueryParam("systemid"), data.DisplayName, data.TrainingPhrase, data.MessageTexts)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	message.Message = "success"
+	return c.JSON(200, message)
+}
+
+func DeleteIntent(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
+	var data struct {
+		IntentName string
+	}
+	if err := c.Bind(&data); err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	err := repositories.DeleteIntent(tokens["user_id"].(string), c.QueryParam("systemid"), data.IntentName)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	message.Message = "success"
+	return c.JSON(200, message)
+}
