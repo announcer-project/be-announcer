@@ -8,6 +8,7 @@ type Message struct {
 	gorm.Model
 	IntentName   string
 	TypeMessage  string
+	JSONMessage  string
 	DialogflowID uint
 }
 

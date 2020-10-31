@@ -14,6 +14,7 @@ import (
 	"os"
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2"
+	"github.com/line/line-bot-sdk-go/linebot"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	dialogflowpb "google.golang.org/genproto/googleapis/cloud/dialogflow/v2"
@@ -111,7 +112,7 @@ func ConnectDialogflow(
 	return nil
 }
 
-func Webhook(systemid, message string) (interface{}, error) {
+func Webhook(systemid, message, replytoken string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	system := models.System{}
@@ -135,6 +136,21 @@ func Webhook(systemid, message string) (interface{}, error) {
 		return nil, err
 	}
 	response := df.ProcessNLP(message, "testUser")
+	msg := models.Message{}
+	db.Where("intent_name = ? and dialogflow_id = ? and deleted_at is null", response.Intent, df.ID).First(&msg)
+	lineoa := models.LineOA{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
+	bot, _ := linebot.New(lineoa.ChannelID, lineoa.ChannelSecret)
+	if msg.ID == 0 {
+		textmessage := linebot.NewTextMessage(response.Response)
+		bot.ReplyMessage(replytoken, textmessage)
+	} else {
+		flexContainer, _ := linebot.UnmarshalFlexMessageJSON([]byte(msg.JSONMessage))
+		// New Flex Message
+		flexMessage := linebot.NewFlexMessage("FlexWithJSON", flexContainer)
+		// Reply Message
+		bot.ReplyMessage(replytoken, flexMessage).Do()
+	}
 	return response, nil
 }
 

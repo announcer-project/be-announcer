@@ -95,11 +95,7 @@ func Webhook(c echo.Context) error {
 		message.Message = "server error."
 		return c.JSON(500, message)
 	}
-	response, err := repositories.Webhook(c.Param("systemid"), messageEvent.Events[0].Message.Text)
-	if err != nil {
-		message.Message = err.Error()
-		return c.JSON(500, message)
-	}
+	response, _ := repositories.Webhook(c.Param("systemid"), messageEvent.Events[0].Message.Text, messageEvent.Events[0].ReplyToken)
 	return c.JSON(200, response)
 }
 
