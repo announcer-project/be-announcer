@@ -219,20 +219,43 @@ func ListIntents(userID, systemID string) ([]*dialogflowpb.Intent, error) {
 	return intents, nil
 }
 
-// func GetIntent(projectID string) (*dialogflowpb.Intent, error) {
-// 	ctx := context.Background()
-// 	c, err := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile("dialogflow/"+projectID+".json"))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer c.Close()
-// 	// parent := fmt.Sprintf("projects/%s/agent", projectID)
-// 	name := fmt.Sprintf("projects/%s/agent/intents/%s", projectID, "หิว")
-// 	// name:="projects/<Project ID>/agent/intents/<Intent ID>"
-// 	req := &dialogflowpb.GetIntentRequest{Name: name}
-// 	resp, err := c.GetIntent(ctx, req)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return resp, nil
-// }
+func GetIntent(userID, systemID, IntentName string) (*dialogflowpb.Intent, error) {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemID).First(&system)
+	if system.ID == "" {
+		return nil, errors.New("system not found.")
+	}
+	admin := models.Admin{}
+	db.Where("user_id = ? and system_id = ?", userID, system.ID).First(&admin)
+	if admin.ID == 0 {
+		return nil, errors.New("you not admin.")
+	}
+	df := models.DialogflowProcessor{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
+	if df.ID == 0 {
+		return nil, errors.New("system not connect dialogflow.")
+	}
+	err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove("dialogflow/" + df.ProjectID + ".json")
+	df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
+	err = df.Init()
+
+	ctx := context.Background()
+	c, err := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile(df.AuthJSONFilePath))
+	if err != nil {
+		return nil, err
+	}
+	defer c.Close()
+	// name:="projects/<Project ID>/agent/intents/<Intent ID>"
+	req := &dialogflowpb.GetIntentRequest{Name: IntentName}
+	response, err := c.GetIntent(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}

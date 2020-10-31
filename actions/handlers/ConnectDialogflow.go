@@ -116,11 +116,30 @@ func ListIntent(c echo.Context) error {
 		message.Message = "Not have system ID."
 		return c.JSON(500, message)
 	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	response, err := repositories.ListIntents(tokens["user_id"].(string), c.QueryParam("systemid"))
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, response)
+}
+
+func GetIntent(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
 	var data struct {
-		ProjectID          string
-		AuthJSONFileBase64 string
-		Lang               string
-		TimeZone           string
+		IntentName string
 	}
 	if err := c.Bind(&data); err != nil {
 		message.Message = err.Error()
@@ -128,7 +147,7 @@ func ListIntent(c echo.Context) error {
 	}
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := repositories.DecodeJWT(jwt)
-	response, err := repositories.ListIntents(tokens["user_id"].(string), c.QueryParam("systemid"))
+	response, err := repositories.GetIntent(tokens["user_id"].(string), c.QueryParam("systemid"), data.IntentName)
 	if err != nil {
 		return c.JSON(500, err)
 	}
