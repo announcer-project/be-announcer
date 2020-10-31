@@ -73,6 +73,7 @@ func Init() *echo.Echo {
 	e.GET("/dialogflow/intent/list", handlers.ListIntent)
 	e.GET("/dialogflow/intent", handlers.GetIntent)
 	e.POST("/dialogflow/intent/create", handlers.CreateIntent)
+	e.DELETE("/dialogflow/intent/delete", handlers.DeleteIntent)
 	// e.POST("/testbot", handlers.Webhook)
 	// e.POST("/createintent", handlers.CreateIntent)
 	return e

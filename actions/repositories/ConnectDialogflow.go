@@ -283,3 +283,48 @@ func CreateIntent(userID, systemID, displayName string, trainingPhraseParts, mes
 
 	return nil
 }
+
+func DeleteIntent(userID, systemID, IntentName string) error {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemID).First(&system)
+	if system.ID == "" {
+		return errors.New("system not found.")
+	}
+	admin := models.Admin{}
+	db.Where("user_id = ? and system_id = ?", userID, system.ID).First(&admin)
+	if admin.ID == 0 {
+		return errors.New("you not admin.")
+	}
+	df := models.DialogflowProcessor{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
+	if df.ID == 0 {
+		return errors.New("system not connect dialogflow.")
+	}
+	err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
+	if err != nil {
+		return err
+	}
+	defer os.Remove("dialogflow/" + df.ProjectID + ".json")
+	df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
+	err = df.Init()
+
+	ctx := context.Background()
+
+	intentsClient, clientErr := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile(df.AuthJSONFilePath))
+	if clientErr != nil {
+		log.Print(clientErr)
+		return clientErr
+	}
+	defer intentsClient.Close()
+
+	request := dialogflowpb.DeleteIntentRequest{Name: IntentName}
+
+	requestErr := intentsClient.DeleteIntent(ctx, &request)
+	if requestErr != nil {
+		return requestErr
+	}
+
+	return nil
+}
