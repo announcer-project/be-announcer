@@ -6,6 +6,29 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func CheckConnectDialogflow(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	checked, err := repositories.CheckConnectDialogflow(tokens["user_id"].(string), c.QueryParam("systemid"))
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	return c.JSON(200, checked)
+}
+
 func ConnectDialogflow(c echo.Context) error {
 	authorization := c.Request().Header.Get("Authorization")
 	var message struct {

@@ -67,6 +67,7 @@ func Init() *echo.Echo {
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
 
 	//Dialogflow
+	e.GET("/dialogflow/check", handlers.CheckConnectDialogflow)
 	e.POST("/dialogflow/connect", handlers.ConnectDialogflow)
 	e.POST("/webhook/:systemid", handlers.Webhook)
 	// e.POST("/testbot", handlers.Webhook)
