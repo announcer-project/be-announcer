@@ -22,6 +22,8 @@ type DialogflowProcessor struct {
 	SystemID         string
 	sessionClient    *dialogflow.SessionsClient `gorm:"-"`
 	ctx              context.Context            `gorm:"-"`
+
+	Message []Message `gorm:"foreignkey:DialogflowID" json:"-"`
 }
 
 type NLPResponse struct {

@@ -153,3 +153,35 @@ func GetIntent(c echo.Context) error {
 	}
 	return c.JSON(200, response)
 }
+
+func CreateIntent(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
+	var data struct {
+		DisplayName    string
+		TrainingPhrase []string
+		MessageTexts   []string
+	}
+	if err := c.Bind(&data); err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	err := repositories.CreateIntent(tokens["user_id"].(string), c.QueryParam("systemid"), data.DisplayName, data.TrainingPhrase, data.MessageTexts)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	message.Message = "success"
+	return c.JSON(200, message)
+}
