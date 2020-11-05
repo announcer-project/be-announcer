@@ -124,6 +124,26 @@ func GetAllNews(userid, systemid string, status string) (interface{}, error) {
 	return news, nil
 }
 
+func DeleteNews(userid, systemid string, newsid int) error {
+	db := database.Open()
+	defer db.Close()
+	admin := models.Admin{}
+	system := models.System{}
+	db.Where("id = ?", systemid).Find(&system)
+	if system.ID == "" {
+		return errors.New("not have system.")
+	}
+	db.Where("user_id = ? AND system_id = ?", userid, systemid).Find(&admin)
+	if admin.ID == 0 {
+		return errors.New("You not admin in this system.")
+	}
+	news := modelsNews.News{}
+	db.Where("id = ?", newsid).First(&news)
+	db.Where("news_id = ?", news.ID).Delete(&modelsNews.TypeOfNews{})
+	db.Delete(&news)
+	return nil
+}
+
 //NewsType
 func CreateNewsType(userid, systemid, newstypename string) (interface{}, error) {
 	db := database.Open()

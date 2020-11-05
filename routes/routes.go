@@ -70,8 +70,13 @@ func Init() *echo.Echo {
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
 
 	//Open API
+	e.POST("/v1/news/create", openapi.CreateNews)
+	e.POST("/v1/newstype/create", openapi.CreateNewsType)
+	e.DELETE("/v1/news/:id", openapi.DeleteNews)
 	e.GET("/v1/news/:id", openapi.GetNewsbyID)
 	e.GET("/v1/news/all/publish", openapi.GetAllNewsPublish)
 	e.GET("/v1/news/all/draft", openapi.GetAllNewsDraft)
+	e.GET("/v1/newstype/all", openapi.GetAllNewsType)
+	e.DELETE("/v1/newstype/:id", openapi.DeleteNewsType)
 	return e
 }
