@@ -54,7 +54,6 @@ func Init() *echo.Echo {
 	e.PUT("/role/request/approve", handlers.ApproveRoleRequest)
 	e.DELETE("/role/request/reject", handlers.RejectRoleRequest)
 	//Social
-	e.POST("/webhooklineoa", handlers.WebhookLineOA)
 	e.GET("/connect/line/check", handlers.CheckConnectLineOA)
 	e.DELETE("/connect/line/:systemid", handlers.DisconnectLinaOA)
 	e.POST("/connect/line", handlers.ConenctLineOA)
@@ -66,7 +65,6 @@ func Init() *echo.Echo {
 	e.GET("/line/register/aboutsystem", handlers.GetAboutSystemForLineRegister)
 
 	//Line API Richmenu
-	e.POST("/webhook/:hookid", handlers.WebhookLineOA)
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
 
 	//Open API
@@ -78,5 +76,15 @@ func Init() *echo.Echo {
 	e.GET("/v1/news/all/draft", openapi.GetAllNewsDraft)
 	e.GET("/v1/newstype/all", openapi.GetAllNewsType)
 	e.DELETE("/v1/newstype/:id", openapi.DeleteNewsType)
+	//Dialogflow
+	e.GET("/dialogflow/check", handlers.CheckConnectDialogflow)
+	e.POST("/dialogflow/connect", handlers.ConnectDialogflow)
+	e.POST("/webhook/:systemid", handlers.Webhook)
+	e.GET("/dialogflow/intent/list", handlers.ListIntent)
+	e.GET("/dialogflow/intent", handlers.GetIntent)
+	e.POST("/dialogflow/intent/create", handlers.CreateIntent)
+	e.DELETE("/dialogflow/intent/delete", handlers.DeleteIntent)
+	// e.POST("/testbot", handlers.Webhook)
+	// e.POST("/createintent", handlers.CreateIntent)
 	return e
 }

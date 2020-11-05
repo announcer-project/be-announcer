@@ -47,6 +47,8 @@ func Migration(db *gorm.DB) {
 		&modelsMember.MemberInterested{},
 		&modelsMember.MemberGroup{},
 		&modelsLineAPI.RichMenu{},
+		&models.DialogflowProcessor{},
+		&models.Message{},
 	)
 }
 
