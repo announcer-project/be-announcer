@@ -60,7 +60,7 @@ func CreateNews(
 	tx.Create(&news)
 	sess := ConnectFileStorage()
 	if cover != "" {
-		imageByte := Base64toByte(cover)
+		imageByte := Base64toByte(cover, "image")
 		imagename := system.ID + "-" + fmt.Sprint(news.ID) + "-cover.png"
 		if err := CreateFile(sess, imageByte, imagename, "/news"); err != nil {
 			tx.Rollback()
@@ -68,7 +68,7 @@ func CreateNews(
 		}
 	}
 	for i, image := range images {
-		imageByte := Base64toByte(image)
+		imageByte := Base64toByte(image, "image")
 		imagename := system.ID + "-" + fmt.Sprint(news.ID) + "-" + strconv.Itoa(i) + `.png`
 		imagedb := modelsNews.Image{ImageName: imagename, NewsID: news.ID}
 		tx.Create(&imagedb)
@@ -122,6 +122,26 @@ func GetAllNews(userid, systemid string, status string) (interface{}, error) {
 	news := []modelsNews.News{}
 	db.Where("system_id = ? AND status = ?", systemid, status).Preload("TypeOfNews").Find(&news)
 	return news, nil
+}
+
+func DeleteNews(userid, systemid string, newsid int) error {
+	db := database.Open()
+	defer db.Close()
+	admin := models.Admin{}
+	system := models.System{}
+	db.Where("id = ?", systemid).Find(&system)
+	if system.ID == "" {
+		return errors.New("not have system.")
+	}
+	db.Where("user_id = ? AND system_id = ?", userid, systemid).Find(&admin)
+	if admin.ID == 0 {
+		return errors.New("You not admin in this system.")
+	}
+	news := modelsNews.News{}
+	db.Where("id = ?", newsid).First(&news)
+	db.Where("news_id = ?", news.ID).Delete(&modelsNews.TypeOfNews{})
+	db.Delete(&news)
+	return nil
 }
 
 //NewsType

@@ -114,7 +114,7 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 		tx.Rollback()
 		return nil, errors.New("create fail.")
 	}
-	imageByte := Base64toByte(systemReq.SystemProfile)
+	imageByte := Base64toByte(systemReq.SystemProfile, "image")
 	sess := ConnectFileStorage()
 	if err := CreateFile(sess, imageByte, system.ID+".png", "/systems"); err != nil {
 		tx.Rollback()
