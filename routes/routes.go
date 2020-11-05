@@ -2,6 +2,7 @@ package routes
 
 import (
 	"be_nms/actions/handlers"
+	"be_nms/actions/handlers/openapi"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -66,6 +67,15 @@ func Init() *echo.Echo {
 	//Line API Richmenu
 	// e.GET("/richmenu/setdefaultregister", handlers.SetDefaultRichMenuRegister)
 
+	//Open API
+	e.POST("/v1/news/create", openapi.CreateNews)
+	e.POST("/v1/newstype/create", openapi.CreateNewsType)
+	e.DELETE("/v1/news/:id", openapi.DeleteNews)
+	e.GET("/v1/news/:id", openapi.GetNewsbyID)
+	e.GET("/v1/news/all/publish", openapi.GetAllNewsPublish)
+	e.GET("/v1/news/all/draft", openapi.GetAllNewsDraft)
+	e.GET("/v1/newstype/all", openapi.GetAllNewsType)
+	e.DELETE("/v1/newstype/:id", openapi.DeleteNewsType)
 	//Dialogflow
 	e.GET("/dialogflow/check", handlers.CheckConnectDialogflow)
 	e.POST("/dialogflow/connect", handlers.ConnectDialogflow)
