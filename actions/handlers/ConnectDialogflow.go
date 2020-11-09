@@ -134,16 +134,18 @@ func GetIntent(c echo.Context) error {
 		message.Message = "Not have system ID."
 		return c.JSON(500, message)
 	}
-	var data struct {
-		IntentName string
-	}
-	if err := c.Bind(&data); err != nil {
-		message.Message = err.Error()
+	if c.Param("projectid") == "" {
+		message.Message = "Not have project ID."
 		return c.JSON(500, message)
 	}
+	if c.Param("id") == "" {
+		message.Message = "Not have intent ID."
+		return c.JSON(500, message)
+	}
+	intentname := "projects/" + c.Param("projectid") + "/agent/intents/" + c.Param("id")
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := repositories.DecodeJWT(jwt)
-	response, err := repositories.GetIntent(tokens["user_id"].(string), c.QueryParam("systemid"), data.IntentName)
+	response, err := repositories.GetIntent(tokens["user_id"].(string), c.QueryParam("systemid"), intentname)
 	if err != nil {
 		return c.JSON(500, err)
 	}

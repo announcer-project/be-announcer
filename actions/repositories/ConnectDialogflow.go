@@ -256,7 +256,7 @@ func GetIntent(userID, systemID, IntentName string) (*dialogflowpb.Intent, error
 	}
 	defer c.Close()
 	// name:="projects/<Project ID>/agent/intents/<Intent ID>"
-	req := &dialogflowpb.GetIntentRequest{Name: IntentName}
+	req := &dialogflowpb.GetIntentRequest{Name: IntentName, IntentView: dialogflowpb.IntentView_INTENT_VIEW_FULL}
 	response, err := c.GetIntent(ctx, req)
 	if err != nil {
 		return nil, err
