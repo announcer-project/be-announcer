@@ -6,7 +6,7 @@ import (
 
 type MemberGroup struct {
 	gorm.Model
-	MemberID      uint
+	MemberID      string
 	TargetGroupID uint
 }
 

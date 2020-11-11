@@ -34,7 +34,6 @@ func RegisterGetNews(data struct {
 }) error {
 	db := database.Open()
 	defer db.Close()
-	user := models.User{}
 	log.Print("2")
 	system := models.System{}
 	db.Where("id = ? and deleted_at is null", data.SystemID).First(&system)
@@ -63,79 +62,37 @@ func RegisterGetNews(data struct {
 			return errors.New("not found richmenu afterregister")
 		}
 	}
-	if data.FName == "" && data.LName == "" {
-		db.Where("line_id = ? and deleted_at is null", data.Line).First(&user)
-		log.Print("user", user)
-		tx := db.Begin()
-		member := modelsMember.Member{}
-		if role.Require {
-			member.UserID = user.ID
-			member.SystemID = system.ID
-			member.RoleID = role.ID
-			member.Approve = false
-		} else {
-			member.UserID = user.ID
-			member.SystemID = system.ID
-			member.RoleID = role.ID
-			member.Approve = true
-		}
-		for _, newstype := range data.NewsInterested {
-			memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
-			member.AddNewsTypeInterested(memberInterrested)
-		}
-		tx.Create(&member)
-		if member.ID == 0 {
-			return errors.New("Create member fail")
-		}
-		targetgroup := modelsMember.TargetGroup{}
-		db.Where("target_group_name = ? and deleted is null", role.RoleName).First(&targetgroup)
-		membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
-		tx.Create(&membergroup)
-		targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
-		tx.Update(&targetgroup)
-		if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID); err != nil {
-			return err
-		}
-		tx.Commit()
-		return nil
+	tx := db.Begin()
+	member := modelsMember.Member{}
+	member.LineID = data.Line
+	member.FName = data.FName
+	member.LName = data.LName
+	member.SystemID = system.ID
+	member.RoleID = role.ID
+	if role.Require {
+		member.Approve = false
 	} else {
-		user, err := Register(data.Email, data.FName, data.LName, data.Line, "", "", true, data.ImageUrl, "")
-		if err != nil {
-			return errors.New("Register fail")
-		}
-		tx := db.Begin()
-		member := modelsMember.Member{}
-		if role.Require {
-			member.UserID = user.(models.User).ID
-			member.SystemID = system.ID
-			member.RoleID = role.ID
-			member.Approve = false
-		} else {
-			member.UserID = user.(models.User).ID
-			member.SystemID = system.ID
-			member.RoleID = role.ID
-			member.Approve = true
-		}
-		for _, newstype := range data.NewsInterested {
-			memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
-			member.AddNewsTypeInterested(memberInterrested)
-		}
-		tx.Create(&member)
-		if member.ID == 0 {
-			return errors.New("Create member fail")
-		}
-		targetgroup := modelsMember.TargetGroup{}
-		db.Where("target_group_name = ? and deleted is null", role.RoleName).First(&targetgroup)
-		membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
-		tx.Create(&membergroup)
-		targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
-		tx.Update(&targetgroup)
-		if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.(models.User).LineID); err != nil {
-			return err
-		}
-		tx.Commit()
-		return nil
+		member.Approve = true
 	}
+	for _, newstype := range data.NewsInterested {
+		memberInterrested := modelsMember.MemberInterested{NewsTypeID: newstype.ID}
+		member.AddNewsTypeInterested(memberInterrested)
+	}
+	tx.Create(&member)
+	if member.ID == "" {
+		return errors.New("Create member fail")
+	}
+	targetgroup := modelsMember.TargetGroup{}
+	db.Where("target_group_name = ? and deleted is null", role.RoleName).First(&targetgroup)
+	membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
+	tx.Create(&membergroup)
+	targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
+	tx.Update(&targetgroup)
+	if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, member.LineID); err != nil {
+		return err
+	}
+	tx.Commit()
+	return nil
 }
 
 func GetAllMember(userid, systemid string) (interface{}, error) {

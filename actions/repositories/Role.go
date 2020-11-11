@@ -52,25 +52,20 @@ func GetRoleRequest(systemid string) (interface{}, error) {
 	defer db.Close()
 	db.Where("system_id = ? and approve = ?", systemid, false).Find(&members)
 	var memberrequests []struct {
-		Key    uint   `json:"key"`
-		UserID string `json:"userId"`
-		Name   string `json:"name"`
-		Role   string `json:"role"`
+		Key  string `json:"key"`
+		Name string `json:"name"`
+		Role string `json:"role"`
 	}
 	for _, member := range members {
-		user := models.User{}
 		role := models.Role{}
 		var memberrequest struct {
-			Key    uint   `json:"key"`
-			UserID string `json:"userId"`
-			Name   string `json:"name"`
-			Role   string `json:"role"`
+			Key  string `json:"key"`
+			Name string `json:"name"`
+			Role string `json:"role"`
 		}
-		db.Where("id = ?", member.UserID).First(&user)
 		db.Where("id = ?", member.RoleID).First(&role)
 		memberrequest.Key = member.ID
-		memberrequest.UserID = user.ID
-		memberrequest.Name = user.FName + " " + user.LName
+		memberrequest.Name = member.FName + " " + member.LName
 		memberrequest.Role = role.RoleName
 		memberrequests = append(memberrequests, memberrequest)
 	}
@@ -97,13 +92,8 @@ func ApproveRoleRequest(memberid uint, userid, systemid string) error {
 	}
 	member := modelsMember.Member{}
 	db.Where("id = ? and system_id = ? and deleted_at is null", memberid, system.ID).First(&member)
-	if member.ID == 0 {
+	if member.ID == "" {
 		return errors.New("not found member request.")
-	}
-	user := models.User{}
-	db.Where("id = ? and deleted_at is null", member.UserID).First(&user)
-	if user.ID == "" {
-		return errors.New("not found user.")
 	}
 	role := models.Role{}
 	db.Where("id = ? and deleted_at is null", member.RoleID).First(&role)
@@ -118,7 +108,7 @@ func ApproveRoleRequest(memberid uint, userid, systemid string) error {
 	member.Approve = true
 	tx := db.Begin()
 	tx.Save(&member)
-	err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID)
+	err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, member.LineID)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -141,14 +131,9 @@ func RejectRoleRequest(memberid uint, userid, systemid string) error {
 		return errors.New("you not admin.")
 	}
 	member := modelsMember.Member{}
-	user := models.User{}
 	db.Where("id = ? and system_id = ? and deleted_at is null", memberid, system.ID).First(&member)
-	if member.ID == 0 {
+	if member.ID == "" {
 		return errors.New("not found member request.")
-	}
-	db.Where("id = ? and deleted_at is null", member.UserID).First(&user)
-	if user.ID == "" {
-		return errors.New("not found user.")
 	}
 	lineoa := models.LineOA{}
 	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
@@ -157,7 +142,7 @@ func RejectRoleRequest(memberid uint, userid, systemid string) error {
 	}
 	richmenu := modelsLineAPI.RichMenu{}
 	db.Where("status = ? and line_oa_id = ? and deleted_at is null", "preregister", lineoa.ID).First(&richmenu)
-	err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID)
+	err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, member.LineID)
 	if err != nil {
 		return err
 	}
@@ -197,10 +182,8 @@ func DeleteRole(systemid, userid, roleid string) error {
 	richmenu := modelsLineAPI.RichMenu{}
 	db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "preregister").First(&richmenu)
 	for _, member := range members {
-		user := models.User{}
-		db.Where("id = ? and deleted_at is null", member.UserID).First(&user)
 		tx.Where("member_id = ? and deleted_at is null", member.ID).Delete(&modelsMember.MemberInterested{})
-		SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, user.LineID)
+		SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, member.LineID)
 	}
 	tx.Where("role_id = ? and deleted_at is null", role.ID).Delete(&modelsMember.Member{})
 	tx.Where("id = ? and deleted_at is null", role.ID).Delete(&models.Role{})

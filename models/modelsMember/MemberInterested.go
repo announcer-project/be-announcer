@@ -6,7 +6,7 @@ import (
 
 type MemberInterested struct {
 	gorm.Model
-	MemberID   uint
+	MemberID   string
 	NewsTypeID uint
 
 	// Admin    []Admin               `gorm:"foreignkey:SystemID"`

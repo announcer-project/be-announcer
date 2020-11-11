@@ -16,9 +16,7 @@ func BroadcastToEveryone(messages []linebot.SendingMessage, bot *linebot.Client,
 	members := []modelsMember.Member{}
 	db.Where("system_id = ? and approve = ?", systemid, true).Find(&members)
 	for _, member := range members {
-		user := models.User{}
-		db.Where("id = ?", member.UserID).First(&user)
-		line_id = append(line_id, user.LineID)
+		line_id = append(line_id, member.LineID)
 	}
 	bot.Multicast(line_id, messages...).Do()
 }
@@ -68,10 +66,8 @@ func GetLineIDMemberInterested(newstypes []modelsNews.NewsType) []string {
 		for _, member_interested := range members_interested {
 			member := modelsMember.Member{}
 			db.Where("id = ? and approve = ?", member_interested.MemberID, true).First(&member)
-			if member.ID != 0 {
-				user := models.User{}
-				db.Where("id = ?", member.UserID).First(&user)
-				line_id_hash[user.LineID] = user.LineID
+			if member.ID != "" {
+				line_id_hash[member.LineID] = member.LineID
 			}
 		}
 	}
@@ -91,10 +87,8 @@ func GetLineIDMemberTargetGroup(targetgroups []modelsMember.TargetGroup) []strin
 		for _, member_targetgroup := range members_targetgroup {
 			member := modelsMember.Member{}
 			db.Where("id = ? and approve = ?", member_targetgroup.MemberID, true).First(&member)
-			if member.ID != 0 {
-				user := models.User{}
-				db.Where("id = ?", member.UserID).First(&user)
-				line_id_hash[user.LineID] = user.LineID
+			if member.ID != "" {
+				line_id_hash[member.LineID] = member.LineID
 			}
 		}
 	}

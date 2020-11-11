@@ -13,7 +13,7 @@ func CreateTargetGroup(
 	systemid,
 	groupname string,
 	members []struct {
-		MemberID uint
+		MemberID string
 	}) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
@@ -35,7 +35,7 @@ func CreateTargetGroup(
 	for _, member := range members {
 		memberDB := modelsMember.Member{}
 		db.Where("id = ? and system_id = ?", member.MemberID, systemid).First(&memberDB)
-		if memberDB.ID == 0 {
+		if memberDB.ID == "" {
 			return nil, errors.New("not have member id " + fmt.Sprint(member.MemberID))
 		}
 		memberGroup := modelsMember.MemberGroup{MemberID: member.MemberID}
