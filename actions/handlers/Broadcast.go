@@ -18,7 +18,7 @@ import (
 type AboutLineBroadcast struct {
 	NewsTypes    []modelsNews.NewsType      `json:"newstypes"`
 	TargetGroups []modelsMember.TargetGroup `json:"targetgroups"`
-	Users        []models.User              `json:"users"`
+	Members      []modelsMember.Member      `json:"members"`
 	News         []modelsNews.News          `json:"news"`
 }
 
@@ -41,18 +41,17 @@ func GetAboutLineBroadcast(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	users := []models.User{}
 	members, err := repositories.GetAllMember(tokens["user_id"].(string), c.QueryParam("systemid"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	for _, member := range members.([]modelsMember.Member) {
-		user, err := repositories.GetUserByID(member.UserID)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, err)
-		}
-		users = append(users, user.(models.User))
-	}
+	// for _, member := range members.([]modelsMember.Member) {
+	// 	user, err := repositories.GetUserByID(member.UserID)
+	// 	if err != nil {
+	// 		return c.JSON(http.StatusBadRequest, err)
+	// 	}
+	// 	users = append(users, user.(models.User))
+	// }
 	news, err := repositories.GetAllNews(tokens["user_id"].(string), c.QueryParam("systemid"), "Publish")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
@@ -60,7 +59,7 @@ func GetAboutLineBroadcast(c echo.Context) error {
 	aboutLineBroadcast := AboutLineBroadcast{
 		NewsTypes:    newstypes.([]modelsNews.NewsType),
 		TargetGroups: targetgroups.([]modelsMember.TargetGroup),
-		Users:        users,
+		Members:      members.([]modelsMember.Member),
 		News:         news.([]modelsNews.News),
 	}
 	return c.JSON(http.StatusOK, aboutLineBroadcast)

@@ -22,7 +22,7 @@ func CreateTargetGroup(c echo.Context) error {
 		Groupname string
 		SystemID  string
 		Members   []struct {
-			MemberID uint
+			MemberID string
 		}
 	}
 	if err := c.Bind(&data); err != nil {

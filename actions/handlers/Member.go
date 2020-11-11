@@ -2,9 +2,6 @@ package handlers
 
 import (
 	"be_nms/actions/repositories"
-	"be_nms/database"
-	"be_nms/models"
-	"be_nms/models/modelsMember"
 	"be_nms/models/modelsNews"
 	"log"
 	"net/http"
@@ -61,19 +58,5 @@ func GetAllMember(c echo.Context) error {
 		message.Message = err.Error()
 		return c.JSON(500, message)
 	}
-	membersArr := members.([]modelsMember.Member)
-	db := database.Open()
-	defer db.Close()
-	type Members struct {
-		Member modelsMember.Member `json:"member"`
-		User   models.User         `json:"user"`
-	}
-	membersRes := []Members{}
-	for _, member := range membersArr {
-		user := models.User{}
-		db.Where("id = ?", member.UserID).First(&user)
-		m := Members{Member: member, User: user}
-		membersRes = append(membersRes, m)
-	}
-	return c.JSON(http.StatusOK, membersRes)
+	return c.JSON(http.StatusOK, members)
 }

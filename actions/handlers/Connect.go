@@ -67,6 +67,7 @@ func ConenctLineOA(c echo.Context) error {
 		SystemID           string
 		ChannelID          string
 		ChannelAccessToken string
+		LiffID             string
 		Roles              []struct {
 			Rolename string
 			Require  bool
@@ -79,11 +80,27 @@ func ConenctLineOA(c echo.Context) error {
 	log.Print(data)
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := repositories.DecodeJWT(jwt)
-	connecterr := repositories.ConnectLineOA(data.SystemID, tokens["user_id"].(string), data.ChannelID, data.ChannelAccessToken, data.Roles)
+	connecterr := repositories.ConnectLineOA(data.SystemID, tokens["user_id"].(string), data.ChannelID, data.LiffID, data.ChannelAccessToken, data.Roles)
 	if connecterr != nil {
 		message.Message = connecterr.Error()
 		return c.JSON(500, message)
 	}
 	message.Message = "connect success."
 	return c.JSON(200, message)
+}
+
+func GetLiffID(c echo.Context) error {
+	var message struct {
+		Message string `json:"message"`
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "not have param."
+		return c.JSON(401, message)
+	}
+	liffid, err := repositories.GetLiffID(c.QueryParam("systemid"))
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	return c.JSON(200, liffid)
 }

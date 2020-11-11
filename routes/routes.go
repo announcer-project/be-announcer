@@ -62,6 +62,7 @@ func Init() *echo.Echo {
 	e.POST("/broadcast/line", handlers.BroadcastNewsToLine)
 	//Liff
 	e.POST("/line/register", handlers.CreateMember)
+	e.GET("/line/liffid", handlers.GetLiffID)
 	e.GET("/line/register/aboutsystem", handlers.GetAboutSystemForLineRegister)
 
 	//Line API Richmenu
