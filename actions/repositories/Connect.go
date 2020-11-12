@@ -244,12 +244,12 @@ func GetLiffID(systemid string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
 	system := models.System{}
-	db.Where("id = ? and deleted is null", systemid).First(&system)
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
 	if system.ID == "" {
 		return nil, errors.New("system not found.")
 	}
 	lineoa := models.LineOA{}
-	db.Where("system_id = ? and deleted is null", system.ID).First(&lineoa)
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
 	if lineoa.ID == 0 {
 		return nil, errors.New("system not connect lineoa.")
 	}

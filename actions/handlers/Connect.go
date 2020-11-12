@@ -94,7 +94,7 @@ func GetLiffID(c echo.Context) error {
 		Message string `json:"message"`
 	}
 	if c.QueryParam("systemid") == "" {
-		message.Message = "not have param."
+		message.Message = "not have query param."
 		return c.JSON(401, message)
 	}
 	liffid, err := repositories.GetLiffID(c.QueryParam("systemid"))
