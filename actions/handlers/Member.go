@@ -11,11 +11,8 @@ import (
 
 func CreateMember(c echo.Context) error {
 	var data struct {
-		IsUser         bool
 		FName          string
 		LName          string
-		Email          string
-		ImageUrl       string
 		RoleID         int
 		NewsInterested []modelsNews.NewsType
 		SystemID       string

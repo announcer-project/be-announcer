@@ -6,7 +6,6 @@ import (
 	"be_nms/models/modelsLineAPI"
 	"be_nms/models/modelsMember"
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -117,7 +116,7 @@ func ConnectLineOA(
 				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeURI,
-					URI:  getEnv("LINE_LIFF", "") + "/" + system.SystemName + "/" + fmt.Sprint(system.ID) + "/register",
+					URI:  "https://liff.line.me/" + liffid + "/register",
 					Text: "click me",
 				},
 			},
@@ -147,7 +146,7 @@ func ConnectLineOA(
 				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 1686},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeURI,
-					URI:  getEnv("LINE_LIFF", "") + "/" + system.SystemName + "/" + fmt.Sprint(system.ID) + "/register",
+					URI:  "https://liff.line.me/" + liffid + "/waiting",
 					Text: "click me",
 				},
 			},
