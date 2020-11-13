@@ -1,1 +1,1 @@
-web: ./be_nms
+web: bin/be_nms
