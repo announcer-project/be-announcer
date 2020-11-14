@@ -169,39 +169,25 @@ func ConnectLineOA(
 		ChatBarText: "Menu",
 		Areas: []linebot.AreaDetail{
 			{
-				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 1683, Height: 839},
+				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 843},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeURI,
-					URI:  "https://www.sit.kmutt.ac.th/",
+					URI:  "https://announcer-system/news/all",
 					Text: "click me",
 				},
 			},
 			{
-				Bounds: linebot.RichMenuBounds{X: 1683, Y: 0, Width: 817, Height: 839},
+				Bounds: linebot.RichMenuBounds{X: 0, Y: 843, Width: 1250, Height: 843},
 				Action: linebot.RichMenuAction{
-					Type: linebot.RichMenuActionTypeMessage,
-					Text: "โปรไฟล์ของฉัน",
+					Type: linebot.RichMenuActionTypeURI,
+					URI:  "https://liff.line.me/" + liffid + "/profile",
 				},
 			},
 			{
-				Bounds: linebot.RichMenuBounds{X: 0, Y: 834, Width: 830, Height: 852},
+				Bounds: linebot.RichMenuBounds{X: 1251, Y: 843, Width: 1250, Height: 843},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeMessage,
-					Text: "ทุนการศึกษา",
-				},
-			},
-			{
-				Bounds: linebot.RichMenuBounds{X: 830, Y: 839, Width: 853, Height: 847},
-				Action: linebot.RichMenuAction{
-					Type: linebot.RichMenuActionTypeMessage,
-					Text: "ผลงานและกิจกรรม",
-				},
-			},
-			{
-				Bounds: linebot.RichMenuBounds{X: 1682, Y: 839, Width: 818, Height: 847},
-				Action: linebot.RichMenuAction{
-					Type: linebot.RichMenuActionTypeMessage,
-					Text: "อยากคุยกับน้องบอท",
+					Text: "ทำตามนี้นะ",
 				},
 			},
 		},

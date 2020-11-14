@@ -44,10 +44,12 @@ func CreateRichmenu(channelid, channelaccesstoken, richname string, richMenu lin
 func DeleteRichmenu(channelid, channelaccesstoken, richmenuid string) error {
 	bot, err := linebot.New(channelid, channelaccesstoken)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 	_, err = bot.DeleteRichMenu(richmenuid).Do()
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 	return nil

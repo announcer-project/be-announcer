@@ -104,3 +104,72 @@ func GetAllMember(userid, systemid string) (interface{}, error) {
 	db.Where("system_id = ? and approve = ?", systemid, true).Find(&members)
 	return members, nil
 }
+
+func GetMemberByLineID(lineid string) (interface{}, error) {
+	db := database.Open()
+	defer db.Close()
+	member := modelsMember.Member{}
+	db.Where("line_id = ? and deleted_at is null", lineid).First(&member)
+	if member.ID == "" {
+		return nil, errors.New("member not found.")
+	}
+	return member, nil
+}
+
+func UpdateMemberName(fname, lname, memberid string) error {
+	db := database.Open()
+	defer db.Close()
+	member := modelsMember.Member{}
+	db.Where("id = ? and deleted_at is null", memberid).First(&member)
+	if member.ID == "" {
+		return errors.New("member not found.")
+	}
+	member.FName = fname
+	member.LName = lname
+	db.Save(&member)
+	return nil
+}
+
+func UpdateMemberRole(roleid, memberid string) error {
+	db := database.Open()
+	defer db.Close()
+	member := modelsMember.Member{}
+	db.Where("id = ? and deleted_at is null", memberid).First(&member)
+	if member.ID == "" {
+		return errors.New("member not found.")
+	}
+	role := models.Role{}
+	db.Where("id = ? and deleted_at is null", roleid).First(&role)
+	if role.ID == 0 {
+		return errors.New("role not found.")
+	}
+	member.RoleID = role.ID
+	db.Save(&member)
+	return nil
+}
+
+func UpdateMemberNewstype(memberid string, Newstypes []struct {
+	Newstype   modelsNews.NewsType
+	Interested bool
+}) error {
+	db := database.Open()
+	defer db.Close()
+	tx := db.Begin()
+	for _, newstype := range Newstypes {
+		log.Print(newstype)
+		newstypeinteresteddb := modelsMember.MemberInterested{}
+		db.Where("news_type_id = ? and deleted_at is null", newstype.Newstype.ID).First(&newstypeinteresteddb)
+		newstypeInterested := modelsMember.MemberInterested{MemberID: memberid, NewsTypeID: newstype.Newstype.ID}
+		if newstype.Interested {
+			if newstypeinteresteddb.ID == 0 {
+				tx.Create(&newstypeInterested)
+			}
+		} else {
+			if newstypeinteresteddb.ID != 0 {
+				tx.Delete(&newstypeinteresteddb)
+			}
+		}
+	}
+	tx.Commit()
+	return nil
+}

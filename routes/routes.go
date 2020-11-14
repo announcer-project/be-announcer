@@ -40,12 +40,16 @@ func Init() *echo.Echo {
 	e.POST("/news/newstype/create", handlers.CreateNewsType)
 	e.POST("/news/newstype/delete", handlers.DeleteNewsType)
 	e.GET("/news/newstype/all", handlers.GetAlNewsType)
+	e.GET("/news/newstype/member", handlers.GetNewsTypeMember)
 	//TargetGroup
 	e.POST("/targetgroup/create", handlers.CreateTargetGroup)
 	e.GET("/targetgroup/:systemid/all", handlers.GetAllTargetGroup)
 	e.DELETE("/targetgroup/:systemid/:targetgroupid", handlers.DeleteTargetGroup)
 	//Member
 	e.GET("/member/all", handlers.GetAllMember)
+	e.PUT("/member/:memberid/name", handlers.UpdateMemberName)
+	e.PUT("/member/:memberid/role", handlers.UpdateMemberRole)
+	e.PUT("/member/:memberid/newstype", handlers.UpdateMemberNewstype)
 	//Role
 	e.POST("/role/create", handlers.CreateRole)
 	e.GET("/role/all", handlers.GetAllRole)
@@ -63,6 +67,7 @@ func Init() *echo.Echo {
 	//Liff
 	e.POST("/line/register", handlers.CreateMember)
 	e.GET("/line/liffid", handlers.GetLiffID)
+	e.GET("/line/member/:lineid", handlers.GetMemberByLineID)
 	e.GET("/line/register/aboutsystem", handlers.GetAboutSystemForLineRegister)
 
 	//Line API Richmenu

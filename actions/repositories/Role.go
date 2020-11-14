@@ -190,3 +190,14 @@ func DeleteRole(systemid, userid, roleid string) error {
 	tx.Commit()
 	return nil
 }
+
+func GetRoleByID(roleid uint) (interface{}, error) {
+	db := database.Open()
+	defer db.Close()
+	role := models.Role{}
+	db.Where("id = ? and deleted_at is null", roleid).First(&role)
+	if role.ID == 0 {
+		return nil, errors.New("role not found.")
+	}
+	return role, nil
+}

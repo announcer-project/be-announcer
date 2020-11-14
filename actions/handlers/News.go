@@ -212,13 +212,8 @@ func CreateNewsType(c echo.Context) error {
 }
 
 func GetAlNewsType(c echo.Context) error {
-	authorization := c.Request().Header.Get("Authorization")
 	var message struct {
 		Message string `json:"message"`
-	}
-	if authorization == "" {
-		message.Message = "not have jwt."
-		return c.JSON(401, message)
 	}
 	if c.QueryParam("systemid") == "" {
 		message.Message = "not have query param."
@@ -257,4 +252,26 @@ func DeleteNewsType(c echo.Context) error {
 	}
 	message.Message = "delete success."
 	return c.JSON(http.StatusOK, message)
+}
+
+func GetNewsTypeMember(c echo.Context) error {
+	var message struct {
+		Message string `json:"message"`
+	}
+	systemid := c.QueryParam("systemid")
+	memberid := c.QueryParam("memberid")
+	if systemid == "" {
+		message.Message = "not have query param."
+		return c.JSON(401, message)
+	}
+	if memberid == "" {
+		message.Message = "not have query param."
+		return c.JSON(401, message)
+	}
+	newsinterested, err := repositories.GetNewsTypeMember(systemid, memberid)
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	return c.JSON(200, newsinterested)
 }

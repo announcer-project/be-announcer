@@ -202,3 +202,32 @@ func GetAllNewsType(systemid string, getnumberofnews bool) (interface{}, error) 
 	}
 	return newsTypes, nil
 }
+
+func GetNewsTypeMember(systemid, memberid string) (interface{}, error) {
+	var interested []struct {
+		NewsType   modelsNews.NewsType `json:'newstype'`
+		Interested bool                `json:'interested'`
+	}
+	db := database.Open()
+	defer db.Close()
+	newstypes := []modelsNews.NewsType{}
+	db.Where("system_id = ? and deleted_at is null", systemid).Find(&newstypes)
+	if len(newstypes) == 0 {
+		return nil, errors.New("not found news type.")
+	}
+	for _, newstype := range newstypes {
+		newstype_interested := modelsMember.MemberInterested{}
+		db.Where("member_id = ? and news_type_id = ? and deleted_at is null", memberid, newstype.ID).First(&newstype_interested)
+		var interest struct {
+			NewsType   modelsNews.NewsType `json:'newstype'`
+			Interested bool                `json:'interested'`
+		}
+		interest.NewsType = newstype
+		interest.Interested = true
+		if newstype_interested.ID == 0 {
+			interest.Interested = false
+		}
+		interested = append(interested, interest)
+	}
+	return interested, nil
+}
