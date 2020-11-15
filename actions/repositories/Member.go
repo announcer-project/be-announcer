@@ -80,7 +80,7 @@ func RegisterGetNews(data struct {
 		return errors.New("Create member fail")
 	}
 	targetgroup := modelsMember.TargetGroup{}
-	db.Where("target_group_name = ? and deleted is null", role.RoleName).First(&targetgroup)
+	db.Where("target_group_name = ? and deleted_at is null", role.RoleName).First(&targetgroup)
 	membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
 	tx.Create(&membergroup)
 	targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1

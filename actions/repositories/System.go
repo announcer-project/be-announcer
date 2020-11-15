@@ -82,14 +82,14 @@ func CreateSystem(user_id string, data interface{}) (interface{}, error) {
 		SystemProfile string
 		Systemname    string
 		NewsTypes     []string
-		LineOA        struct {
-			ChannelID          string
-			ChannelAccessToken string
-			RoleUsers          []struct {
-				RoleName string
-				Require  bool
-			}
-		}
+		// LineOA        struct {
+		// 	ChannelID          string
+		// 	ChannelAccessToken string
+		// 	RoleUsers          []struct {
+		// 		RoleName string
+		// 		Require  bool
+		// 	}
+		// }
 	})
 
 	db := database.Open()

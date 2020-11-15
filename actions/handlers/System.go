@@ -142,14 +142,14 @@ func CreateSystem(c echo.Context) error {
 		SystemProfile string
 		Systemname    string
 		NewsTypes     []string
-		LineOA        struct {
-			ChannelID          string
-			ChannelAccessToken string
-			RoleUsers          []struct {
-				RoleName string
-				Require  bool
-			}
-		}
+		// LineOA        struct {
+		// 	ChannelID          string
+		// 	ChannelAccessToken string
+		// 	RoleUsers          []struct {
+		// 		RoleName string
+		// 		Require  bool
+		// 	}
+		// }
 	}
 	if err := c.Bind(&data); err != nil {
 		message.Message = err.Error()
