@@ -72,7 +72,7 @@ func GetRoleRequest(systemid string) (interface{}, error) {
 	return memberrequests, nil
 }
 
-func ApproveRoleRequest(memberid uint, userid, systemid string) error {
+func ApproveRoleRequest(memberid string, userid, systemid string) error {
 	db := database.Open()
 	defer db.Close()
 	system := models.System{}
@@ -117,7 +117,7 @@ func ApproveRoleRequest(memberid uint, userid, systemid string) error {
 	return nil
 }
 
-func RejectRoleRequest(memberid uint, userid, systemid string) error {
+func RejectRoleRequest(memberid string, userid, systemid string) error {
 	db := database.Open()
 	defer db.Close()
 	system := models.System{}

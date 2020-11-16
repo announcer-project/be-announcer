@@ -108,7 +108,7 @@ func ApproveRoleRequest(c echo.Context) error {
 		return c.JSON(401, message)
 	}
 	var data struct {
-		MemberID uint
+		MemberID string
 		SystemID string
 	}
 	if err := c.Bind(&data); err != nil {
@@ -139,7 +139,7 @@ func RejectRoleRequest(c echo.Context) error {
 		return c.JSON(401, message)
 	}
 	var data struct {
-		MemberID uint
+		MemberID string
 		SystemID string
 	}
 	if err := c.Bind(&data); err != nil {
