@@ -97,6 +97,9 @@ func Webhook(c echo.Context) error {
 		return c.JSON(500, message)
 	}
 	log.Print(messageEvent)
+	if len(messageEvent.Events) == 0 {
+		return c.JSON(200, "connect success")
+	}
 	response, _ := repositories.Webhook(c.Param("systemid"), messageEvent.Events[0].Message.Text, messageEvent.Events[0].ReplyToken)
 	return c.JSON(200, response)
 }
