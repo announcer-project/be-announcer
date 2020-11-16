@@ -120,38 +120,39 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 	if system.ID == "" {
 		return nil, errors.New("system not found.")
 	}
-	df := models.DialogflowProcessor{}
-	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
-	if df.ID == 0 {
-		return nil, errors.New("not connect dialogflow.")
-	}
-	err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
-	if err != nil {
-		return nil, err
-	}
-	defer os.Remove("dialogflow/" + df.ProjectID + ".json")
-	df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
-	err = df.Init()
-	if err != nil {
-		return nil, err
-	}
-	response := df.ProcessNLP(message, "testUser")
-	msg := models.Message{}
-	db.Where("intent_name = ? and dialogflow_id = ? and deleted_at is null", response.Intent, df.ID).First(&msg)
+	// df := models.DialogflowProcessor{}
+	// db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
+	// if df.ID == 0 {
+	// 	return nil, errors.New("not connect dialogflow.")
+	// }
+	// err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// defer os.Remove("dialogflow/" + df.ProjectID + ".json")
+	// df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
+	// err = df.Init()
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// response := df.ProcessNLP(message, "testUser")
+	// msg := models.Message{}
+	// db.Where("intent_name = ? and dialogflow_id = ? and deleted_at is null", response.Intent, df.ID).First(&msg)
 	lineoa := models.LineOA{}
 	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
 	bot, _ := linebot.New(lineoa.ChannelID, lineoa.ChannelSecret)
-	if msg.ID == 0 {
-		textmessage := linebot.NewTextMessage(response.Response)
-		bot.ReplyMessage(replytoken, textmessage)
-	} else {
-		flexContainer, _ := linebot.UnmarshalFlexMessageJSON([]byte(msg.JSONMessage))
-		// New Flex Message
-		flexMessage := linebot.NewFlexMessage("FlexWithJSON", flexContainer)
-		// Reply Message
-		bot.ReplyMessage(replytoken, flexMessage).Do()
-	}
-	return response, nil
+	// if msg.ID == 0 {
+	textmessage := linebot.NewTextMessage(message)
+	// textmessage := linebot.NewTextMessage(response.Response)
+	bot.ReplyMessage(replytoken, textmessage)
+	// } else {
+	// flexContainer, _ := linebot.UnmarshalFlexMessageJSON([]byte(msg.JSONMessage))
+	// // New Flex Message
+	// flexMessage := linebot.NewFlexMessage("FlexWithJSON", flexContainer)
+	// // Reply Message
+	// bot.ReplyMessage(replytoken, flexMessage).Do()
+	// }
+	return nil, nil
 }
 
 func DowloadFileJSON(URL, filename string) error {

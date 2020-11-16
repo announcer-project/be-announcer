@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"be_nms/actions/repositories"
+	"log"
 
 	"github.com/labstack/echo/v4"
 )
@@ -95,6 +96,7 @@ func Webhook(c echo.Context) error {
 		message.Message = "server error."
 		return c.JSON(500, message)
 	}
+	log.Print(messageEvent)
 	response, _ := repositories.Webhook(c.Param("systemid"), messageEvent.Events[0].Message.Text, messageEvent.Events[0].ReplyToken)
 	return c.JSON(200, response)
 }
