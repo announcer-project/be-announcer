@@ -1,4 +1,4 @@
-.env
+# .env
 go.sum
 gin-bin.exe
 be_nms.exe
