@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"be_nms/actions/repositories"
+	"log"
 
 	"github.com/labstack/echo/v4"
 )
@@ -94,6 +95,10 @@ func Webhook(c echo.Context) error {
 	if err := c.Bind(&messageEvent); err != nil {
 		message.Message = "server error."
 		return c.JSON(500, message)
+	}
+	log.Print(messageEvent)
+	if len(messageEvent.Events) == 0 {
+		return c.JSON(200, "connect success")
 	}
 	response, _ := repositories.Webhook(c.Param("systemid"), messageEvent.Events[0].Message.Text, messageEvent.Events[0].ReplyToken)
 	return c.JSON(200, response)
