@@ -44,7 +44,7 @@ func Base64toByte(Base64, typeBase64 string) []byte {
 	}
 	if typeBase64 == "json" {
 		log.Print("base64 :", Base64)
-		file = string([]rune(Base64)[23:])
+		file = string([]rune(Base64)[29:])
 		log.Print("json : ", file)
 	}
 	dec, err := base64.StdEncoding.DecodeString(file)
