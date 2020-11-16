@@ -144,7 +144,7 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 	// if msg.ID == 0 {
 	textmessage := linebot.NewTextMessage(message)
 	// textmessage := linebot.NewTextMessage(response.Response)
-	bot.ReplyMessage(replytoken, textmessage)
+	bot.ReplyMessage(replytoken, textmessage).Do()
 	// } else {
 	// flexContainer, _ := linebot.UnmarshalFlexMessageJSON([]byte(msg.JSONMessage))
 	// // New Flex Message
