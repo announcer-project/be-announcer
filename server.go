@@ -1,6 +1,7 @@
 package main
 
 import (
+	"be_nms/database"
 	"be_nms/routes"
 	"fmt"
 	"log"
@@ -24,8 +25,8 @@ func main() {
 		log.Print("No .env file found")
 	}
 	e := routes.Init()
-	// db := database.Open()
-	// defer db.Close()
+	db := database.Open()
+	defer db.Close()
 	// database.Migration(db)
 	// database.SetData(db)
 	e.Use(middleware.CORS())
