@@ -150,7 +150,7 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 	} else {
 		var columns []*linebot.CarouselColumn
 		multiplenews := []modelsNews.News{}
-		db.Raw("SELECT * FROM news WHERE system_id = ? and deleted is null ORDER BY id DESC LIMIT 5", 3).Scan(&multiplenews)
+		db.Raw("SELECT * FROM news WHERE system_id = ? and deleted_at is null ORDER BY id DESC LIMIT 5", 3).Scan(&multiplenews)
 		// db.Where("system_id = ? and deleted_at is null", system.ID).Limit(5).Begin().Last(&multiplenews)
 		if len(multiplenews) != 0 {
 			for _, news := range multiplenews {
