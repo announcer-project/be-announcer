@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"unicode/utf8"
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -143,16 +144,40 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 	bot, _ := linebot.New(lineoa.ChannelID, lineoa.ChannelSecret)
 	if msg.ID == 0 {
 		log.Print("from dialogflow")
-		// textmessage := linebot.NewTextMessage(message)
 		textmessage := linebot.NewTextMessage(response.Response)
 		bot.ReplyMessage(replytoken, textmessage).Do()
 	} else {
+		var columns []*linebot.CarouselColumn
+		multiplenews := []modelsNews.News{}
+		db.Where("system_id = ? and deleted_at is null", system.ID).Limit(5).Begin().Last(&multiplenews)
+		if len(multiplenews) != 0 {
+
+			for _, news := range multiplenews {
+				title := news.Title
+				body := news.Body
+				if utf8.RuneCountInString(news.Title) > 37 {
+					title = string([]rune(news.Title)[0:37]) + "..."
+				}
+				if utf8.RuneCountInString(news.Body) > 57 {
+					body = string([]rune(news.Body)[0:57]) + "..."
+				}
+				cardline := linebot.NewCarouselColumn(getEnv("STORAGE_PATH", "")+system.ID+"-"+fmt.Sprint(news.ID)+"-cover.png",
+					title,
+					body,
+					linebot.NewURIAction("More Detail", "https://announcer-system.com/news/"+system.SystemName+"/"+system.ID+"/"+fmt.Sprint(news.ID)))
+				columns = append(columns, cardline)
+			}
+			carousel := linebot.NewCarouselTemplate(columns...)
+			template := linebot.NewTemplateMessage("Carousel", carousel)
+			bot.ReplyMessage(replytoken, template).Do()
+		} else {
+			textmessage := linebot.NewTextMessage("ไม่มีข่าวเกี่ยวกับ " + response.Intent)
+			if df.Lang == "en" {
+				textmessage = linebot.NewTextMessage("not have news about " + response.Intent)
+			}
+			bot.ReplyMessage(replytoken, textmessage).Do()
+		}
 		log.Print("from db")
-		flexContainer, _ := linebot.UnmarshalFlexMessageJSON([]byte(msg.JSONMessage))
-		// New Flex Message
-		flexMessage := linebot.NewFlexMessage("FlexWithJSON", flexContainer)
-		// Reply Message
-		bot.ReplyMessage(replytoken, flexMessage).Do()
 	}
 	return nil, nil
 }
