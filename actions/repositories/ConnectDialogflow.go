@@ -142,10 +142,12 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
 	bot, _ := linebot.New(lineoa.ChannelID, lineoa.ChannelSecret)
 	if msg.ID == 0 {
+		log.Print("from dialogflow")
 		// textmessage := linebot.NewTextMessage(message)
 		textmessage := linebot.NewTextMessage(response.Response)
 		bot.ReplyMessage(replytoken, textmessage).Do()
 	} else {
+		log.Print("from db")
 		flexContainer, _ := linebot.UnmarshalFlexMessageJSON([]byte(msg.JSONMessage))
 		// New Flex Message
 		flexMessage := linebot.NewFlexMessage("FlexWithJSON", flexContainer)
