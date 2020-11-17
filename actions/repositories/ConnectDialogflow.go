@@ -15,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2"
+	strip "github.com/grokify/html-strip-tags-go"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -154,14 +155,15 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 
 			for _, news := range multiplenews {
 				title := news.Title
-				body := news.Body
+				body := strip.StripTags(news.Body)
 				if utf8.RuneCountInString(news.Title) > 37 {
 					title = string([]rune(news.Title)[0:37]) + "..."
 				}
 				if utf8.RuneCountInString(news.Body) > 57 {
 					body = string([]rune(news.Body)[0:57]) + "..."
 				}
-				cardline := linebot.NewCarouselColumn(getEnv("STORAGE_PATH", "")+system.ID+"-"+fmt.Sprint(news.ID)+"-cover.png",
+				cardline := linebot.NewCarouselColumn(
+					getEnv("STORAGE_PATH", "")+"/news/"+system.ID+"-"+fmt.Sprint(news.ID)+"-cover.png",
 					title,
 					body,
 					linebot.NewURIAction("More Detail", "https://announcer-system.com/news/"+system.SystemName+"/"+system.ID+"/"+fmt.Sprint(news.ID)))
