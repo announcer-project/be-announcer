@@ -155,12 +155,15 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 		textmessage := linebot.NewTextMessage(response.Response)
 		bot.ReplyMessage(replytoken, textmessage).Do()
 	} else {
+		newstype := modelsNews.NewsType{}
+		db.Where("news_type_name = ? and deleted_at is null", msg.IntentName).First(&newstype)
 		var columns []*linebot.CarouselColumn
-		multiplenews := []modelsNews.News{}
-		db.Raw("SELECT * FROM news WHERE system_id = ? and deleted_at is null ORDER BY id DESC LIMIT 5", system.ID).Scan(&multiplenews)
-		// db.Where("system_id = ? and deleted_at is null", system.ID).Limit(5).Begin().Last(&multiplenews)
-		if len(multiplenews) != 0 {
-			for _, news := range multiplenews {
+		typeofnews := []modelsNews.TypeOfNews{}
+		db.Raw("SELECT * FROM typeofnews WHERE news_type_id = ? and deleted_at is null ORDER BY id DESC LIMIT 5", newstype.ID).Scan(&typeofnews)
+		if len(typeofnews) != 0 {
+			for _, typenews := range typeofnews {
+				news := modelsNews.News{}
+				db.Where("id = ? and deleted_at is null", typenews.NewsID).First(&news)
 				title := news.Title
 				body := strip.StripTags(news.Body)
 				if utf8.RuneCountInString(news.Title) > 37 {
@@ -177,7 +180,7 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 				columns = append(columns, cardline)
 			}
 			carousel := linebot.NewCarouselTemplate(columns...)
-			template := linebot.NewTemplateMessage("Carousel", carousel)
+			template := linebot.NewTemplateMessage("ข่าว", carousel)
 			bot.ReplyMessage(replytoken, template).Do()
 		} else {
 			textmessage := linebot.NewTextMessage("ไม่มีข่าวเกี่ยวกับ " + response.Intent)
