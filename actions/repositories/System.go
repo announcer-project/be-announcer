@@ -68,9 +68,10 @@ func DeleteSystem(systemid, userid string) error {
 		tx.Where("news_id = ? and deleted_at is null", n.ID).Delete(&modelsNews.Image{})
 		tx.Where("news_id = ? and deleted_at is null", n.ID).Delete(&modelsNews.TypeOfNews{})
 	}
+	DisconnectLineOA(systemid, userid)
+	DisconnectDialogflow(systemid, userid)
 	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsNews.News{})
 	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsNews.NewsType{})
-	DisconnectLineOA(systemid, userid)
 	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsMember.TargetGroup{})
 	tx.Where("system_id = ? and user_id = ? and deleted_at is null", systemid, userid).Delete(&models.Admin{})
 	tx.Where("id = ? and deleted_at is null", systemid).Delete(&models.System{})

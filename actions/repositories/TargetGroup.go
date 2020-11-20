@@ -78,6 +78,11 @@ func DeleteTargetgroup(systemid, userid, targetgroupid string) error {
 	if targetgroup.ID == 0 {
 		return errors.New("target group not found.")
 	}
+	role := models.Role{}
+	db.Where("system_id = ? and role_name = ? and deleted_at is null", system.ID, targetgroup.TargetGroupName).First(&role)
+	if role.ID != 0 {
+		return errors.New("can't delete this targetgroup because have role name " + targetgroup.TargetGroupName + ".")
+	}
 	tx := db.Begin()
 	tx.Where("target_group_id = ? and deleted_at is null", targetgroup.ID).Delete(&modelsMember.MemberGroup{})
 	tx.Where("id = ? and system_id = ? and deleted_at is null", targetgroup.ID, system.ID).Delete(&modelsMember.TargetGroup{})

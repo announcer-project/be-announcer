@@ -70,6 +70,7 @@ func DisconnectLineOA(systemid, userid string) error {
 		tx.Where("member_id = ? and deleted_at is null", member.ID).Delete(&modelsMember.MemberGroup{})
 	}
 	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&models.Role{})
+	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsMember.TargetGroup{})
 	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&modelsMember.Member{})
 	tx.Where("line_oa_id = ? and deleted_at is null", lineoa.ID).Delete(&modelsLineAPI.RichMenu{})
 	tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&models.LineOA{})
@@ -215,6 +216,7 @@ func ConnectLineOA(
 
 	for _, role := range role {
 		system.AddRole(models.Role{RoleName: role.Rolename, Require: role.Require})
+		system.AddTargerGroup(modelsMember.TargetGroup{TargetGroupName: role.Rolename})
 	}
 	system.AddLineOA(lineoa)
 	if err = tx.Save(&system).Error; err != nil {

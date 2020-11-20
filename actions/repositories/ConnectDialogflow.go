@@ -114,6 +114,72 @@ func ConnectDialogflow(
 	return nil
 }
 
+func DisconnectDialogflow(systemid string, userid string) error {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
+	if system.ID == "" {
+		return errors.New("system not found.")
+	}
+	admin := models.Admin{}
+	db.Where("user_id = ? and system_id = ?", userid, system.ID).First(&admin)
+	if admin.ID == 0 {
+		return errors.New("you not admin.")
+	}
+	tx := db.Begin()
+	df := models.DialogflowProcessor{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
+	if df.ID != 0 {
+		log.Print("delete 1")
+		err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
+		if err != nil {
+			return err
+		}
+		defer os.Remove("dialogflow/" + df.ProjectID + ".json")
+		df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
+		err = df.Init()
+
+		ctx := context.Background()
+
+		intentsClient, clientErr := dialogflow.NewIntentsClient(ctx, option.WithCredentialsFile(df.AuthJSONFilePath))
+		if clientErr != nil {
+			log.Print(clientErr)
+			return clientErr
+		}
+		defer intentsClient.Close()
+		newstypes := []modelsNews.NewsType{}
+		db.Where("system_id = ? and deleted_at is null", system.ID).Find(&newstypes)
+		intents, err := ListIntents(admin.UserID, system.ID)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+		for _, newstype := range newstypes {
+			for _, intent := range intents {
+				if intent.DisplayName == newstype.NewsTypeName {
+					request := dialogflowpb.DeleteIntentRequest{Name: intent.Name}
+
+					requestErr := intentsClient.DeleteIntent(ctx, &request)
+					if requestErr != nil {
+						log.Print(requestErr)
+						tx.Rollback()
+						return requestErr
+					}
+					break
+				}
+			}
+
+		}
+		log.Print("delete 2")
+		tx.Where("dialogflow_id = ? and deleted_at is null", df.ID).Delete(&models.Message{})
+		tx.Where("system_id = ? and deleted_at is null", system.ID).Delete(&models.DialogflowProcessor{})
+	}
+	log.Print("delete 3")
+	tx.Commit()
+	return nil
+}
+
 // func TestGet(systemid string) (interface{}, error) {
 // 	db := database.Open()
 // 	defer db.Close()

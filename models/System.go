@@ -62,3 +62,6 @@ func (system *System) AddNewsTypes(newstype modelsNews.NewsType) {
 func (system *System) AddRole(role Role) {
 	system.Role = append(system.Role, role)
 }
+func (system *System) AddTargerGroup(targetgroup modelsMember.TargetGroup) {
+	system.TargetGroup = append(system.TargetGroup, targetgroup)
+}
