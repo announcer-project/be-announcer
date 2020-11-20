@@ -34,7 +34,7 @@ type NLPResponse struct {
 }
 
 func (DialogflowProcessor) TableName() string {
-	return "dialogflow"
+	return "dialogflows"
 }
 
 func (dp *DialogflowProcessor) Init() (err error) {

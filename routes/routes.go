@@ -24,6 +24,7 @@ func Init() *echo.Echo {
 	e.POST("/register/connectsocial", handlers.ConnectSocialWithAccount)
 	//Admin
 	e.GET("/admin/:systemid", handlers.GetAllAdmin)
+	e.POST("/admin/create", handlers.CreateAdmin)
 	//System
 	e.GET("/system/all", handlers.GetAllSystems)
 	e.GET("/system/:systemid", handlers.GetSystemByID)

@@ -53,3 +53,26 @@ func GetAllAdmin(systemid, userid string) (interface{}, error) {
 	}
 	return adminsDetail, nil
 }
+
+func CreateAdmin(systemid, userid, userIdCoAdmin string) error {
+	db := database.Open()
+	defer db.Close()
+	system := models.System{}
+	db.Where("id = ? and deleted_at is null", systemid).First(&system)
+	if system.ID == "" {
+		return errors.New("system not found.")
+	}
+	checkadmin := models.Admin{}
+	db.Where("system_id = ? and user_id = ? and position = ? and deleted_at is null", systemid, userid, "admin").First(&checkadmin)
+	if checkadmin.ID == 0 {
+		return errors.New("you not admin.")
+	}
+	user := models.User{}
+	db.Where("id = ? and deleted_at is null", userIdCoAdmin).First(&user)
+	if user.ID == "" {
+		return errors.New("user ID incorrect.")
+	}
+	coAdmin := models.Admin{UserID: user.ID, SystemID: system.ID, Position: "co-admin"}
+	db.Create(&coAdmin)
+	return nil
+}

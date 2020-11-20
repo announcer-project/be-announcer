@@ -12,8 +12,6 @@ type TargetGroup struct {
 	SystemID        string     `json:"system_id"`
 
 	MemberGroup []MemberGroup `gorm:"foreignkey:TargetGroupID" json:"member_group"`
-	// News     []modelsNews.News     `gorm:"foreignkey:SystemID"`
-	// NewsType []modelsNews.NewsType `gorm:"foreignkey:SystemID"`
 }
 
 func (TargetGroup) TableName() string {

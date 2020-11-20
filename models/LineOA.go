@@ -10,8 +10,8 @@ type LineOA struct {
 	gorm.Model
 	ChannelID     string
 	ChannelSecret string
-	SystemID      string
 	LiffID        string
+	SystemID      string
 
 	RichMenu []modelsLineAPI.RichMenu `gorm:"foreignkey:LineOAID"`
 }

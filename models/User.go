@@ -18,10 +18,9 @@ type User struct {
 	Email      string     `gorm:"unique" json:"email"`
 	LineID     string     `json:"line_id"`
 	FacebookID string     `json:"facebook_id"`
-	GoogleID   string     `json:"google_id"`
 
-	System []System `gorm:"foreignkey:OwnerID" json:"-"`
-	Admin  []Admin  `gorm:"foreignkey:UserID" json:"-"`
+	System []System `gorm:"foreignKey:OwnerID;references:ID" json:"-"`
+	Admin  []Admin  `gorm:"foreignKey:UserID;references:ID" json:"-"`
 }
 
 func (u *User) BeforeCreate(scope *gorm.Scope) error {
@@ -52,5 +51,4 @@ func (u *User) CreateUser(Fname, LName, Email, LineID, FacebookID, GoogleID stri
 	u.Email = Email
 	u.LineID = LineID
 	u.FacebookID = FacebookID
-	u.GoogleID = GoogleID
 }

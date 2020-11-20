@@ -37,7 +37,6 @@ func Migration(db *gorm.DB) {
 		&models.Admin{},
 		&modelsNews.News{},
 		&modelsNews.Image{},
-		&modelsNews.Announcement{},
 		&modelsNews.NewsType{},
 		&modelsNews.TypeOfNews{},
 		&modelsMember.TargetGroup{},
@@ -50,6 +49,28 @@ func Migration(db *gorm.DB) {
 		&models.DialogflowProcessor{},
 		&models.Message{},
 	)
+	db.Model(&models.System{}).AddForeignKey("owner_id", "users(id)", "RESTRICT", "RESTRICT")
+	db.Model(&models.Admin{}).AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
+	db.Model(&models.Admin{}).AddForeignKey("system_id", "systems(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsNews.News{}).AddForeignKey("system_id", "systems(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsNews.NewsType{}).AddForeignKey("system_id", "systems(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsMember.Member{}).AddForeignKey("system_id", "systems(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsMember.TargetGroup{}).AddForeignKey("system_id", "systems(id)", "RESTRICT", "RESTRICT")
+	db.Model(&models.LineOA{}).AddForeignKey("system_id", "systems(id)", "RESTRICT", "RESTRICT")
+	db.Model(&models.Role{}).AddForeignKey("system_id", "systems(id)", "RESTRICT", "RESTRICT")
+	db.Model(&models.DialogflowProcessor{}).AddForeignKey("system_id", "systems(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsNews.News{}).AddForeignKey("author_id", "admins(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsNews.News{}).AddForeignKey("author_id", "admins(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsNews.Image{}).AddForeignKey("news_id", "news(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsNews.TypeOfNews{}).AddForeignKey("news_id", "news(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsNews.TypeOfNews{}).AddForeignKey("news_type_id", "newstypes(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsMember.MemberInterested{}).AddForeignKey("news_type_id", "newstypes(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsMember.MemberGroup{}).AddForeignKey("target_group_id", "targetgroups(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsLineAPI.RichMenu{}).AddForeignKey("line_oa_id", "lineoas(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsMember.Member{}).AddForeignKey("role_id", "roles(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsMember.MemberGroup{}).AddForeignKey("member_id", "members(id)", "RESTRICT", "RESTRICT")
+	db.Model(&modelsMember.MemberInterested{}).AddForeignKey("member_id", "members(id)", "RESTRICT", "RESTRICT")
+	db.Model(&models.Message{}).AddForeignKey("dialogflow_id", "dialogflows(id)", "RESTRICT", "RESTRICT")
 }
 
 func SetData(db *gorm.DB) {
