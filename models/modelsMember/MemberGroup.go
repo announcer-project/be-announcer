@@ -6,8 +6,8 @@ import (
 
 type MemberGroup struct {
 	gorm.Model
-	MemberID      string
-	TargetGroupID uint
+	MemberID      string `gorm:"not null"`
+	TargetGroupID uint   `gorm:"not null"`
 }
 
 func (MemberGroup) TableName() string {

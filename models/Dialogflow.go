@@ -15,11 +15,11 @@ import (
 
 type DialogflowProcessor struct {
 	gorm.Model
-	ProjectID        string
-	AuthJSONFilePath string
-	Lang             string
-	TimeZone         string
-	SystemID         string
+	ProjectID        string                     `gorm:"unique;not null"`
+	AuthJSONFilePath string                     `gorm:"unique;not null"`
+	Lang             string                     `gorm:"not null"`
+	TimeZone         string                     `gorm:"not null"`
+	SystemID         string                     `gorm:"not null"`
 	sessionClient    *dialogflow.SessionsClient `gorm:"-"`
 	ctx              context.Context            `gorm:"-"`
 

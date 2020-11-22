@@ -12,10 +12,10 @@ type User struct {
 	ID         string     `gorm:"primary_key"`
 	CreatedAt  time.Time  `json:"-"`
 	UpdatedAt  time.Time  `json:"-"`
-	DeletedAt  *time.Time `json:"-"`
-	FName      string     `json:"fname"`
-	LName      string     `json:"lname"`
-	Email      string     `gorm:"unique" json:"email"`
+	DeletedAt  *time.Time `sql:"index" json:"-"`
+	FName      string     `gorm:"not null" json:"fname"`
+	LName      string     `gorm:"not null" json:"lname"`
+	Email      string     `gorm:"unique;not null" json:"email"`
 	LineID     string     `json:"line_id"`
 	FacebookID string     `json:"facebook_id"`
 

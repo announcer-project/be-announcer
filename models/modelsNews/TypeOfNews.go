@@ -1,14 +1,13 @@
 package modelsNews
 
-import "time"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type TypeOfNews struct {
-	ID         uint       `gorm:"primary_key"`
-	CreatedAt  time.Time  `json:"-"`
-	UpdatedAt  time.Time  `json:"-"`
-	DeletedAt  *time.Time `sql:"index" json:"-"`
-	NewsID     uint
-	NewsTypeID uint
+	gorm.Model
+	NewsID     uint `gorm:"not null"`
+	NewsTypeID uint `gorm:"not null"`
 
 	NewsTypeName string `gorm:"-"`
 }

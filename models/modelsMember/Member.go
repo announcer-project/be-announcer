@@ -13,12 +13,12 @@ type Member struct {
 	CreatedAt time.Time  `json:"-"`
 	UpdatedAt time.Time  `json:"-"`
 	DeletedAt *time.Time `sql:"index" json:"-"`
-	Approve   bool       `json:"approve"`
-	LineID    string     `json:"line_id"`
-	FName     string     `json:"f_name"`
-	LName     string     `json:"l_name"`
-	SystemID  string     `json:"system_id"`
-	RoleID    uint       `json:"role_id"`
+	Approve   bool       `gorm:"not null" json:"approve"`
+	LineID    string     `gorm:"not null" json:"line_id"`
+	FName     string     `gorm:"not null" json:"f_name"`
+	LName     string     `gorm:"not null" json:"l_name"`
+	SystemID  string     `gorm:"not null" json:"system_id"`
+	RoleID    uint       `gorm:"not null" json:"role_id"`
 
 	MemberGroup      []MemberGroup      `gorm:"foreignkey:MemberID"`
 	MemberInterested []MemberInterested `gorm:"foreignkey:MemberID"`

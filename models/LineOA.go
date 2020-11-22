@@ -8,10 +8,10 @@ import (
 
 type LineOA struct {
 	gorm.Model
-	ChannelID     string
-	ChannelSecret string
-	LiffID        string
-	SystemID      string
+	ChannelID     string `gorm:"unique;not null"`
+	ChannelSecret string `gorm:"unique;not null"`
+	LiffID        string `gorm:"unique;not null"`
+	SystemID      string `gorm:"not null"`
 
 	RichMenu []modelsLineAPI.RichMenu `gorm:"foreignkey:LineOAID"`
 }

@@ -84,7 +84,7 @@ func RegisterGetNews(data struct {
 	membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
 	tx.Create(&membergroup)
 	targetgroup.NumberOfMembers = targetgroup.NumberOfMembers + 1
-	tx.Update(&targetgroup)
+	tx.Save(&targetgroup)
 	if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, member.LineID); err != nil {
 		return err
 	}

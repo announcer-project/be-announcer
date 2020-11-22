@@ -4,6 +4,6 @@ import "github.com/jinzhu/gorm"
 
 type Image struct {
 	gorm.Model
-	ImageName string
-	NewsID    uint
+	ImageName string `gorm:"unique;not null"`
+	NewsID    uint   `gorm:"not null"`
 }

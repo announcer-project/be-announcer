@@ -2,17 +2,15 @@ package models
 
 import (
 	"be_nms/models/modelsMember"
-	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 type Role struct {
-	ID        uint       `gorm:"primary_key"`
-	CreatedAt time.Time  `json:"-"`
-	UpdatedAt time.Time  `json:"-"`
-	DeletedAt *time.Time `sql:"index" json:"-"`
-	RoleName  string     `json:"rolename"`
-	Require   bool       `json:"require"`
-	SystemID  string     `json:"system_id"`
+	gorm.Model
+	RoleName string `gorm:"not null" json:"rolename"`
+	Require  bool   `gorm:"not null" json:"require"`
+	SystemID string `gorm:"not null" json:"system_id"`
 
 	Member []modelsMember.Member `gorm:"foreignkey:RoleID" json:"-"`
 }

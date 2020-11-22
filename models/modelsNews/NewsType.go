@@ -2,17 +2,15 @@ package modelsNews
 
 import (
 	"be_nms/models/modelsMember"
-	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 type NewsType struct {
-	ID           uint       `gorm:"primary_key"`
-	CreatedAt    time.Time  `json:"-"`
-	UpdatedAt    time.Time  `json:"-"`
-	DeletedAt    *time.Time `sql:"index" json:"-"`
-	NewsTypeName string     `json:"newstype_name"`
-	SystemID     string     `json:"system_id"`
-	NumberNews   int        `gorm:"-" json:"number_news"`
+	gorm.Model
+	NewsTypeName string `gorm:"not null" json:"newstype_name"`
+	SystemID     string `gorm:"not null" json:"system_id"`
+	NumberNews   int    `gorm:"-" json:"number_news"`
 
 	TypeOfNews       []TypeOfNews                    `gorm:"foreignkey:NewsTypeID" json:"-"`
 	MemberInterested []modelsMember.MemberInterested `gorm:"foreignkey:NewsTypeID" json:"-"`

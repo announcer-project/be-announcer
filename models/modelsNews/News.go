@@ -9,12 +9,12 @@ type News struct {
 	CreatedAt  time.Time  `json:"create_date"`
 	UpdatedAt  time.Time  `json:"-"`
 	DeletedAt  *time.Time `sql:"index" json:"-"`
-	Title      string     `json:"title"`
-	Body       string     `sql:"type:text;" json:"body"`
+	Title      string     `gorm:"not null" json:"title"`
+	Body       string     `gorm:"not null" sql:"type:text;" json:"body"`
 	ExpireDate time.Time  `json:"expire_date"`
-	Status     string     `json:"status"` //Draft or Publish
-	AuthorID   uint       `json:"author_id"`
-	SystemID   string     `json:"system_id"`
+	Status     string     `gorm:"not null" json:"status"` //Draft or Publish
+	AuthorID   uint       `gorm:"not null" json:"author_id"`
+	SystemID   string     `gorm:"not null" json:"system_id"`
 
 	Image      []Image      `gorm:"foreignkey:NewsID"`
 	TypeOfNews []TypeOfNews `gorm:"foreignkey:NewsID" json:"type_of_news"`

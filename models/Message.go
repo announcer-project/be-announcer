@@ -6,10 +6,10 @@ import (
 
 type Message struct {
 	gorm.Model
-	IntentName   string
-	TypeMessage  string
+	IntentName   string `gorm:"not null"`
+	TypeMessage  string `gorm:"not null"`
 	JSONMessage  string
-	DialogflowID uint
+	DialogflowID uint `gorm:"not null"`
 }
 
 func (Message) TableName() string {
