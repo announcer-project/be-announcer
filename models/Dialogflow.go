@@ -15,8 +15,8 @@ import (
 
 type DialogflowProcessor struct {
 	gorm.Model
-	ProjectID        string                     `gorm:"unique;not null"`
-	AuthJSONFilePath string                     `gorm:"unique;not null"`
+	ProjectID        string                     `gorm:"not null"`
+	AuthJSONFilePath string                     `gorm:"not null"`
 	Lang             string                     `gorm:"not null"`
 	TimeZone         string                     `gorm:"not null"`
 	SystemID         string                     `gorm:"not null"`
