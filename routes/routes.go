@@ -33,6 +33,7 @@ func Init() *echo.Echo {
 	//NewsManagement
 	e.GET("/aboutsystem", handlers.GetAllAboutSystem)
 	e.GET("/news/all", handlers.GetAllNewsByClassify)
+	e.GET("/news/:systemid/search", handlers.SearchNews)
 	e.GET("/news/all/draft", handlers.GetAllNewsDraft)
 	e.GET("/news/all/publish", handlers.GetAllNewsPublish)
 	e.POST("/news/create", handlers.CreateNews)

@@ -275,3 +275,26 @@ func GetNewsTypeMember(c echo.Context) error {
 	}
 	return c.JSON(200, newsinterested)
 }
+
+func SearchNews(c echo.Context) error {
+	var message struct {
+		Message string `json:"message"`
+	}
+	systemid := c.Param("systemid")
+	search := c.QueryParam("search")
+	newstypeid := c.QueryParam("newstypeid")
+	if systemid == "" {
+		message.Message = "not have param."
+		return c.JSON(401, message)
+	}
+	if newstypeid == "" {
+		message.Message = "not have news type id query param."
+		return c.JSON(401, message)
+	}
+	news, err := repositories.SearchNews(systemid, search, newstypeid)
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	return c.JSON(200, news)
+}

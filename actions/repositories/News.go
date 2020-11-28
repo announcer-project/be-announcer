@@ -238,3 +238,14 @@ func GetNewsTypeMember(systemid, memberid string) (interface{}, error) {
 	}
 	return interested, nil
 }
+
+func SearchNews(systemid, search, newstypeid string) (interface{}, error) {
+	search = "%" + search + "%"
+	if newstypeid == "0" {
+		newstypeid = "%"
+	}
+	db := database.Open()
+	news := []modelsNews.News{}
+	db.Joins("JOIN typeofnews ON typeofnews.news_id = news.id AND news.deleted_at is null AND typeofnews.news_type_id LIKE ? AND news.system_id = ?", newstypeid, systemid).Where("news.title LIKE ?", search).Or("news.body LIKE ?", search).Find(&news)
+	return news, nil
+}
