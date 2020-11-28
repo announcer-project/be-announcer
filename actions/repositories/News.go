@@ -181,9 +181,16 @@ func DeleteNewsType(userid, systemid string, newstypeid int) error {
 	}
 	newstype := modelsNews.NewsType{}
 	db.Where("id = ?", newstypeid).First(&newstype)
-	db.Where("news_type_id = ?", newstype.ID).Delete(&modelsMember.MemberInterested{})
-	db.Where("news_type_id = ?", newstype.ID).Delete(&modelsNews.TypeOfNews{})
-	db.Delete(&newstype)
+	typeofnews := []modelsNews.TypeOfNews{}
+	db.Where("news_type_id = ? and deleted_at is null", newstype.ID).Find(&typeofnews)
+	tx := db.Begin()
+	for _, typenews := range typeofnews {
+		tx.Where("id = ? and deleted_at is null", typenews.NewsID).Delete(&modelsNews.News{})
+	}
+	tx.Where("news_type_id = ? and deleted_at is null", newstype.ID).Delete(&modelsMember.MemberInterested{})
+	tx.Where("news_type_id = ? and deleted_at is null", newstype.ID).Delete(&modelsNews.TypeOfNews{})
+	tx.Delete(&newstype)
+	tx.Commit()
 	return nil
 }
 
