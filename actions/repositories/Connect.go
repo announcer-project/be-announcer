@@ -173,8 +173,7 @@ func ConnectLineOA(
 				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 843},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeURI,
-					URI:  "https://announcer-system/news/all",
-					Text: "click me",
+					URI:  "https://announcer-system.com/news/" + system.SystemName + "/" + system.ID + "/all",
 				},
 			},
 			{
@@ -188,7 +187,7 @@ func ConnectLineOA(
 				Bounds: linebot.RichMenuBounds{X: 1251, Y: 843, Width: 1250, Height: 843},
 				Action: linebot.RichMenuAction{
 					Type: linebot.RichMenuActionTypeMessage,
-					Text: "ทำตามนี้นะ",
+					Text: "สามารถพิมพ์ชื่อของประเภทข่าวได้เลยนะ แล้วจะมีข่าวประเภทนั้นแสดงออกมา",
 				},
 			},
 		},
