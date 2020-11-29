@@ -232,11 +232,11 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 				db.Where("id = ? and deleted_at is null", typenews.NewsID).First(&news)
 				title := news.Title
 				body := strip.StripTags(news.Body)
-				if utf8.RuneCountInString(news.Title) > 37 {
-					title = string([]rune(news.Title)[0:37]) + "..."
+				if utf8.RuneCountInString(title) > 37 {
+					title = string([]rune(title)[0:37]) + "..."
 				}
-				if utf8.RuneCountInString(news.Body) > 57 {
-					body = string([]rune(news.Body)[0:57]) + "..."
+				if utf8.RuneCountInString(body) > 57 {
+					body = string([]rune(body)[0:57]) + "..."
 				}
 				cardline := linebot.NewCarouselColumn(
 					getEnv("STORAGE_PATH", "")+"/news/"+system.ID+"-"+fmt.Sprint(news.ID)+"-cover.png",
