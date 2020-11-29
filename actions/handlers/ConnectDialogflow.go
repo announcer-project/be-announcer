@@ -64,6 +64,30 @@ func ConnectDialogflow(c echo.Context) error {
 	return c.JSON(200, message)
 }
 
+func DisconnectDialogflow(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	var message struct {
+		Message string `json:"message"`
+	}
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	if c.QueryParam("systemid") == "" {
+		message.Message = "Not have system ID."
+		return c.JSON(500, message)
+	}
+	jwt := string([]rune(authorization)[7:])
+	tokens, _ := repositories.DecodeJWT(jwt)
+	err := repositories.DisconnectDialogflow(c.QueryParam("systemid"), tokens["user_id"].(string))
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(500, message)
+	}
+	message.Message = "success"
+	return c.JSON(200, message)
+}
+
 type Event struct {
 	ReplyToken string
 	Type       string

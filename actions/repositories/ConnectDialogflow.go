@@ -222,7 +222,7 @@ func Webhook(systemid, message, replytoken string) (interface{}, error) {
 		bot.ReplyMessage(replytoken, textmessage).Do()
 	} else {
 		newstype := modelsNews.NewsType{}
-		db.Where("news_type_name = ? and deleted_at is null", msg.IntentName).First(&newstype)
+		db.Where("news_type_name = ? and system_id = ? and deleted_at is null", system.ID, msg.IntentName).First(&newstype)
 		var columns []*linebot.CarouselColumn
 		typeofnews := []modelsNews.TypeOfNews{}
 		db.Raw("SELECT * FROM typeofnews WHERE news_type_id = ? and deleted_at is null ORDER BY id DESC LIMIT 5", newstype.ID).Scan(&typeofnews)
