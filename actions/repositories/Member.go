@@ -151,6 +151,7 @@ func UpdateMemberRole(roleid, memberid string) error {
 	}
 	richmenu := modelsLineAPI.RichMenu{}
 	if role.Require {
+		member.Approve = false
 		db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "waitapprove").First(&richmenu)
 		if richmenu.ID == 0 {
 			return errors.New("not found richmenu afterregister")
