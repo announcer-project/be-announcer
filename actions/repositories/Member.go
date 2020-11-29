@@ -144,6 +144,26 @@ func UpdateMemberRole(roleid, memberid string) error {
 		return errors.New("role not found.")
 	}
 	member.RoleID = role.ID
+	lineoa := models.LineOA{}
+	db.Where("system_id = ? and deleted_at is null", role.SystemID).First(&lineoa)
+	if lineoa.ID == 0 {
+		return errors.New("not found line oa.")
+	}
+	richmenu := modelsLineAPI.RichMenu{}
+	if role.Require {
+		db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "waitapprove").First(&richmenu)
+		if richmenu.ID == 0 {
+			return errors.New("not found richmenu afterregister")
+		}
+	} else {
+		db.Where("line_oa_id = ? and status = ? and deleted_at is null", lineoa.ID, "afterregister"+role.RoleName).First(&richmenu)
+		if richmenu.ID == 0 {
+			return errors.New("not found richmenu afterregister")
+		}
+	}
+	if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, member.LineID); err != nil {
+		return err
+	}
 	db.Save(&member)
 	return nil
 }
