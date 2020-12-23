@@ -27,6 +27,11 @@ func CreateTargetGroup(
 	if system.ID == "" {
 		return nil, errors.New("Not have system.")
 	}
+	targetgroupDB := modelsMember.TargetGroup{}
+	db.Where("target_group_name = ? and system_id = ? and deleted_at is null", groupname, system.ID).First(&targetgroupDB)
+	if targetgroupDB.ID != 0 {
+		return nil, errors.New("Duplicate target group name " + groupname)
+	}
 	targetGroup := modelsMember.TargetGroup{
 		TargetGroupName: groupname,
 		NumberOfMembers: len(members),
