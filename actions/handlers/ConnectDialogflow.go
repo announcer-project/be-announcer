@@ -227,7 +227,8 @@ func DeleteIntent(c echo.Context) error {
 		return c.JSON(500, message)
 	}
 	var data struct {
-		IntentName string
+		IntentName  string
+		DisplayName string
 	}
 	if err := c.Bind(&data); err != nil {
 		message.Message = err.Error()
@@ -235,9 +236,10 @@ func DeleteIntent(c echo.Context) error {
 	}
 	jwt := string([]rune(authorization)[7:])
 	tokens, _ := repositories.DecodeJWT(jwt)
-	err := repositories.DeleteIntent(tokens["user_id"].(string), c.QueryParam("systemid"), data.IntentName)
+	err := repositories.DeleteIntent(tokens["user_id"].(string), c.QueryParam("systemid"), data.IntentName, data.DisplayName)
 	if err != nil {
-		return c.JSON(500, err)
+		message.Message = err.Error()
+		return c.JSON(500, message)
 	}
 	message.Message = "success"
 	return c.JSON(200, message)

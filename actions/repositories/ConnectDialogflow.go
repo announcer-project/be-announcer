@@ -469,7 +469,7 @@ func CreateIntentNewstype(displayName string, trainingPhraseParts, messageTexts 
 	return nil
 }
 
-func DeleteIntent(userID, systemID, IntentName string) error {
+func DeleteIntent(userID, systemID, IntentName, DisplayName string) error {
 	db := database.Open()
 	defer db.Close()
 	system := models.System{}
@@ -482,11 +482,19 @@ func DeleteIntent(userID, systemID, IntentName string) error {
 	if admin.ID == 0 {
 		return errors.New("you not admin.")
 	}
+
 	df := models.DialogflowProcessor{}
 	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
 	if df.ID == 0 {
 		return errors.New("system not connect dialogflow.")
 	}
+
+	message := models.Message{}
+	db.Where("intent_name = ? and dialogflow_id = ? and deleted_at is null", DisplayName, df.ID).First(&message)
+	if message.ID != 0 {
+		return errors.New("You can't delete this intent")
+	}
+
 	err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
 	if err != nil {
 		return err
