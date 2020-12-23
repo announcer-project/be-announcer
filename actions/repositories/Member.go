@@ -165,6 +165,15 @@ func UpdateMemberRole(roleid, memberid string) error {
 	if err := SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, member.LineID); err != nil {
 		return err
 	}
+	targetgroup := modelsMember.TargetGroup{}
+	db.Where("target_group_name = ? and system_id = ? and deleted_at is null", role.RoleName, member.SystemID).First(&targetgroup)
+	targetgroup.NumberOfMembers -= 1
+	tx := db.Begin()
+	tx.Where("target_group_id = ? and member_id = ? and deleted_at is null", targetgroup.ID, member.ID).Delete(&modelsMember.MemberGroup{})
+	membergroup := modelsMember.MemberGroup{MemberID: member.ID, TargetGroupID: targetgroup.ID}
+	tx.Create(&membergroup)
+	tx.Commit()
+	db.Save(&targetgroup)
 	db.Save(&member)
 	return nil
 }
