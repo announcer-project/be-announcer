@@ -174,6 +174,11 @@ func CreateNewsType(userid, systemid, newstypename string) (interface{}, error) 
 	if admin.ID == 0 {
 		return nil, errors.New("you not admin in this system.")
 	}
+	newstypeDB := modelsNews.NewsType{}
+	db.Where("news_type_name = ? and deleted_at is null", newstypename).First(&newstypeDB)
+	if newstypeDB.ID != 0 {
+		return nil, errors.New("Duplicate news type name")
+	}
 	newsType := modelsNews.NewsType{NewsTypeName: newstypename, SystemID: system.ID}
 	db.Create(&newsType)
 	if newsType.ID == 0 {
