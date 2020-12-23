@@ -62,6 +62,23 @@ func CreateNews(c echo.Context) error {
 	return c.JSON(http.StatusOK, success)
 }
 
+func DeleteNewsByID(c echo.Context) error {
+	var message struct {
+		Message string `json:"message"`
+	}
+	authorization := c.Request().Header.Get("Authorization")
+	if authorization == "" {
+		message.Message = "not have jwt."
+		return c.JSON(401, message)
+	}
+	err := repositories.DeleteNewsByID(c.Param("id"))
+	if err != nil {
+		message.Message = err.Error()
+		return c.JSON(400, message)
+	}
+	return c.JSON(http.StatusOK, "delete success")
+}
+
 func GetNewsByID(c echo.Context) error {
 	var message struct {
 		Message string `json:"message"`

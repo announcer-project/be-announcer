@@ -93,6 +93,22 @@ func CreateNews(
 // 	return nil
 // }
 
+func DeleteNewsByID(id string) error {
+	db := database.Open()
+	defer db.Close()
+	tx := db.Begin()
+	news := modelsNews.News{}
+	db.Where("id = ? and deleted_at is null", id).First(&news)
+	if news.ID == 0 {
+		return errors.New("news not found")
+	}
+	tx.Where("news_id = ? and deleted_at is null", news.ID).Delete(&modelsNews.Image{})
+	tx.Where("news_id = ? and deleted_at is null", news.ID).Delete(&modelsNews.TypeOfNews{})
+	tx.Where("id = ? and deleted_at is null", news.ID).Delete(&modelsNews.News{})
+	tx.Commit()
+	return nil
+}
+
 func GetNewsByID(status, id string) (interface{}, error) {
 	db := database.Open()
 	defer db.Close()
