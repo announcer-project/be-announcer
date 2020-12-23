@@ -21,6 +21,11 @@ func CreateRole(userid, systemid, rolename string, require bool) (interface{}, e
 	if system.ID == "" {
 		return nil, errors.New("not have system.")
 	}
+	roleDB := models.Role{}
+	db.Where("role_name = ? and system_id = ? and deleted_at is null", rolename, system.ID).First(&roleDB)
+	if roleDB.ID != 0 {
+		return nil, errors.New("Duplicate role name " + rolename)
+	}
 	role := models.Role{RoleName: rolename, Require: require, SystemID: system.ID}
 	tx := db.Begin()
 	tx.Create(&role)
