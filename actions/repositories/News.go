@@ -7,6 +7,7 @@ import (
 	"be_nms/models/modelsNews"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 )
@@ -180,10 +181,30 @@ func CreateNewsType(userid, systemid, newstypename string) (interface{}, error) 
 		return nil, errors.New("Duplicate news type name " + newstypename)
 	}
 	newsType := modelsNews.NewsType{NewsTypeName: newstypename, SystemID: system.ID}
-	db.Create(&newsType)
+	tx := db.Begin()
+	tx.Create(&newsType)
 	if newsType.ID == 0 {
 		return nil, errors.New("create fail.")
 	}
+	df := models.DialogflowProcessor{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
+	if df.ID != 0 {
+		msg := models.Message{IntentName: newsType.NewsTypeName, TypeMessage: "news", DialogflowID: df.ID}
+		tx.Create(&msg)
+		err := DowloadFileJSON(df.AuthJSONFilePath, df.ProjectID+".json")
+		if err != nil {
+			return nil, err
+		}
+		defer os.Remove("dialogflow/" + df.ProjectID + ".json")
+		df.AuthJSONFilePath = "dialogflow/" + df.ProjectID + ".json"
+		err = df.Init()
+		err = CreateIntentNewstype(newsType.NewsTypeName, []string{newsType.NewsTypeName}, []string{}, df)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+	tx.Commit()
 	return newsType, nil
 }
 
@@ -210,6 +231,20 @@ func DeleteNewsType(userid, systemid string, newstypeid int) error {
 	}
 	tx.Where("news_type_id = ? and deleted_at is null", newstype.ID).Delete(&modelsMember.MemberInterested{})
 	tx.Where("news_type_id = ? and deleted_at is null", newstype.ID).Delete(&modelsNews.TypeOfNews{})
+	// DeleteIntent()
+	df := models.DialogflowProcessor{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&df)
+	if df.ID != 0 {
+		intent, err := GetIntent(admin.UserID, system.ID, newstype.NewsTypeName)
+		if err != nil {
+			return err
+		}
+		err = DeleteIntent(admin.UserID, system.ID, intent.Name, intent.DisplayName)
+		if err != nil {
+			return err
+		}
+		tx.Where("intent_name = ? and dialogflow_id = ? and deleted_at is null", newstype.NewsTypeName, df.ID).Delete(&models.Message{})
+	}
 	tx.Delete(&newstype)
 	tx.Commit()
 	return nil
