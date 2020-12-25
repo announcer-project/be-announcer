@@ -6,6 +6,8 @@ import (
 	"be_nms/models/modelsLineAPI"
 	"be_nms/models/modelsMember"
 	"errors"
+
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 func CreateRole(userid, systemid, rolename string, require bool) (interface{}, error) {
@@ -21,13 +23,18 @@ func CreateRole(userid, systemid, rolename string, require bool) (interface{}, e
 	if system.ID == "" {
 		return nil, errors.New("not have system.")
 	}
+	lineoa := models.LineOA{}
+	db.Where("system_id = ? and deleted_at is null", system.ID).First(&lineoa)
+	if lineoa.ID == 0 {
+		return nil, errors.New("Please connect LINE Account before")
+	}
+	tx := db.Begin()
+	role := models.Role{RoleName: rolename, Require: require, SystemID: system.ID}
 	roleDB := models.Role{}
 	db.Where("role_name = ? and system_id = ? and deleted_at is null", rolename, system.ID).First(&roleDB)
 	if roleDB.ID != 0 {
 		return nil, errors.New("Duplicate role name " + rolename)
 	}
-	role := models.Role{RoleName: rolename, Require: require, SystemID: system.ID}
-	tx := db.Begin()
 	tx.Create(&role)
 	if role.ID == 0 {
 		tx.Rollback()
@@ -39,6 +46,46 @@ func CreateRole(userid, systemid, rolename string, require bool) (interface{}, e
 		tx.Rollback()
 		return nil, errors.New("create targetgroup of role fail.")
 	}
+	richMenuAfterRegister := linebot.RichMenu{
+		Size:        linebot.RichMenuSize{Width: 2500, Height: 1686},
+		Selected:    true,
+		Name:        "Menu",
+		ChatBarText: "Menu",
+		Areas: []linebot.AreaDetail{
+			{
+				Bounds: linebot.RichMenuBounds{X: 0, Y: 0, Width: 2500, Height: 843},
+				Action: linebot.RichMenuAction{
+					Type: linebot.RichMenuActionTypeURI,
+					URI:  "https://announcer-system.com/news/" + system.SystemName + "/" + system.ID + "/all",
+				},
+			},
+			{
+				Bounds: linebot.RichMenuBounds{X: 0, Y: 843, Width: 1250, Height: 843},
+				Action: linebot.RichMenuAction{
+					Type: linebot.RichMenuActionTypeURI,
+					URI:  "https://liff.line.me/" + lineoa.LiffID + "/profile",
+				},
+			},
+			{
+				Bounds: linebot.RichMenuBounds{X: 1251, Y: 843, Width: 1250, Height: 843},
+				Action: linebot.RichMenuAction{
+					Type: linebot.RichMenuActionTypeURI,
+					URI:  "https://announcer-system.com/howto/chatbot",
+				},
+			},
+		},
+	}
+	richmenuidAfterRegister, err := CreateRichmenu(lineoa.ChannelID, lineoa.ChannelSecret, "Menu", richMenuAfterRegister)
+	if err != nil {
+		tx.Rollback()
+		return nil, errors.New("richmenu 2 error (create rich menu after register fail.)")
+	}
+	richmenuAfterRegister := modelsLineAPI.RichMenu{RichID: richmenuidAfterRegister.(string), Status: "afterregister" + role.RoleName, LineOAID: lineoa.ID}
+	if err = SetImageToRichMenu(richmenuAfterRegister.RichID, lineoa.ChannelID, lineoa.ChannelSecret, "richmenu-afterregister.png"); err != nil {
+		tx.Rollback()
+		return nil, errors.New("set image richmenu 2 error.")
+	}
+	tx.Create(&richmenuAfterRegister)
 	tx.Commit()
 	return role, nil
 }
@@ -190,6 +237,13 @@ func DeleteRole(systemid, userid, roleid string) error {
 		tx.Where("member_id = ? and deleted_at is null", member.ID).Delete(&modelsMember.MemberInterested{})
 		SetLinkRichMenu(richmenu.RichID, lineoa.ChannelID, lineoa.ChannelSecret, member.LineID)
 	}
+	richmenurole := modelsLineAPI.RichMenu{}
+	db.Where("status = ? and line_oa_id = ? and deleted_at is null", "afterregister"+role.RoleName, lineoa.ID).First(&richmenurole)
+	err := DeleteRichmenu(lineoa.ChannelID, lineoa.ChannelSecret, richmenurole.RichID)
+	if err != nil {
+		return err
+	}
+	tx.Where("status = ? and line_oa_id = ? and deleted_at is null", "afterregister"+role.RoleName, lineoa.ID).Delete(&modelsLineAPI.RichMenu{})
 	tx.Where("role_id = ? and deleted_at is null", role.ID).Delete(&modelsMember.Member{})
 	tx.Where("id = ? and deleted_at is null", role.ID).Delete(&models.Role{})
 	tx.Commit()
